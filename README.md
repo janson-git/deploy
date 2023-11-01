@@ -114,3 +114,5 @@ Now you need to use portion of git-kung-fu:
 Deploy has authorisation, but it mainly "identification".    
 Registration are completely open, user password hashes are available through, inner database management tool.
 Please secure access to deploy by your way or send me pull request to improve situation. 
+
+,,,_^._.^,,,
