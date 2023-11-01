@@ -6,7 +6,6 @@ namespace Interaction\Web\Controller;
 use Admin\App;
 use Service\Data;
 use Service\Project;
-use Service\Sandbox;
 
 class User extends AuthControllerProto
 {
@@ -29,7 +28,6 @@ class User extends AuthControllerProto
         foreach ($packs as $id => $data) {
             $this->packs[$data['pack']][$id] = $data;
         }
-
     }
     
     public function indexAction () 
@@ -86,14 +84,15 @@ class User extends AuthControllerProto
             'branches' => $branches,
             'branchesProjData' => $branchesDataByUserProjects,
             'branchesPackData' => $branchesDataByUserPacks,
+            'sshKeyUploaded' => file_exists('ssh_keys/'. $this->app->auth->getUserLogin()),
         ]);
     }
     
     public function addkey () 
     {
-        $this->setTitle('Задать ssh ключ');
+        $this->setTitle(__('set_ssh_key'));
         
-        $text = 'Сгенерируй ключик, добавь его публичную часть в главное git хранилище (github, gitlab, etc..), приватную часть вставь сюда';
+        $text = __('ssh_key_page_description');
         
         if ($this->app->request->isPost()) {
             $key = $this->p('key');
@@ -102,9 +101,9 @@ class User extends AuthControllerProto
 
             if ($key && file_put_contents($filename, $key) !== false) {
                 chmod($filename, 0600);
-                $text = 'Ключик успешно записан';
+                $text = __('ssh_key_saved_successfully');
             } else {
-                $text = 'Ключик не записан';
+                $text = __('set_ssh_save_failed');
             }
         }
         
@@ -113,7 +112,8 @@ class User extends AuthControllerProto
         ]);
     }
 
-    private function _getCurrentNode($projectId){
+    private function _getCurrentNode($projectId)
+    {
         $project = $this->_getCurrentProject($projectId);
 
         $node = $project->getNode();
@@ -124,12 +124,11 @@ class User extends AuthControllerProto
         return $node;
     }
 
-    private function _getCurrentProject($projectId){
+    private function _getCurrentProject($projectId)
+    {
         $project = new Project($projectId);
         $project->init();
 
         return $project;
     }
-
-
 }

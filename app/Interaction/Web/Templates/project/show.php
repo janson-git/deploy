@@ -1,63 +1,82 @@
-<? 
-/* @var $slots \Service\Slot\SlotProto[]
+<?php
+/* @var $project \Service\Project
+ * @var $slots \Service\Slot\SlotProto[]
  * @var $fetchCommand \Commands\Command\Project\FetchProjectRepos
  * @var $packs \Service\Pack[]
- */ 
-?>
+ * @var $this \Admin\DoView
+ */
 
-<style type="text/css">
-    .bset {
-        overflow: scroll;
-        border: 1px solid #111111;
-        padding: 0.5em 0.5em;
-    }
-    
-    .dset {
-        padding: 0.5em 0.5em;
-    }
-    
-    .vmenu .pure-button {
-        margin-bottom: 0.2em;
-    }
-</style>
+use Service\Breadcrumbs\BreadcrumbsFactory;
+
+$this
+    ->addBreadcrumb(BreadcrumbsFactory::makeProjectListBreadcrumb())
+    ->addBreadcrumb(BreadcrumbsFactory::makeProjectPageBreadcrumb($project));
+?>
 
 <div class="pure-g">
     <div class="pure-u-1">
-        <a href="/web/branches/createPack/<?=$id ?>" class="pure-button pure-button-primary">Создать новый пак</a>
+        <section class="top-page-nav">
+            <a href="/web/project" class="pure-button btn-secondary-outline btn-s">
+                <i class="fa-solid fa-arrow-left"></i> <?= __('back_to_project_list') ?>
+            </a>
+        </section>
+    </div>
+
+    <div class="pure-u-1">
+        <a href="/web/branches/createPack/<?=$id ?>" class="pure-button btn-primary"><?= __('create_pack') ?></a>
         <a href="/web/command/?command=<?=$fetchCommand->getId() ?>&context=<?=$fetchCommand->getContext()->serialize() ?>"
-           class="pure-button <?= $fetchCommand->isPrimary() ? 'pure-button-primary'
+           class="pure-button <?= $fetchCommand->isPrimary() ? 'btn-primary'
                : '' ?>"><?= $fetchCommand->getHumanName() ?>
         </a>
-        <a href="/web/project">Перейти к проектам</a>
+
     </div>
-    <div class="pure-u-1 dset">
+</div>
+
+<div class="pure-g">
+
+    <div class="pure-u-1">
+        <h3><?= __('packs') ?></h3>
+        
         <div class="pure-g">
-            <div class="pure-u-md-1-2 pure-u-xl-2-3">
-                <h3>Паки</h3>
-                <? foreach ($packs as $pack): ?>
-                    <div class="pure-u-1 ">
-                        <div class="dset">
-                            <div><a href="/web/pack/<?=$pack->getId() ?>"><?=$pack->getName(); ?></a>
-                                <a href="<?=$pack->prepareCommand(new \Commands\Command\Pack\RemovePackWithData)->getLink() ?>"
-                                   style="float: right"
-                                   onclick="return confirm('Точно хочешь удалить пак?')">удалить</a></div>
-                            <ul class="bset">
-                                <li><?= @implode('</li><li>', $pack->getBranches()) ?></li>
-                            </ul>
+            <div class="pure-u-1 pure-u-md-1-2 pure-u-xl-2-3">
+                <?php foreach ($packs as $pack): ?>
+                    <div class="pure-u-1 pack-card">
+                        <div>
+                            <?php $branches = $pack->getBranches() ?>
+
+                            <a href="/web/pack/<?=$pack->getId() ?>" class="pack-link">
+                                <i class="fa-regular fa-file-lines"></i> <?=$pack->getName() ?>
+                            </a>
+
+                            <a href="<?=$pack->prepareCommand(new \Commands\Command\Pack\RemovePackWithData)->getLink() ?>"
+                               class="pure-button btn-danger-outline btn-s right"
+                               onclick="return confirm('Do you really want delete pack?')">
+                                <?= __('delete') ?>
+                            </a>
                         </div>
+                        <ul class="branch-list">
+                            <?php if (!empty($branches)): ?>
+                            <li><?= @implode('</li><li>', $branches) ?></li>
+                            <?php else: ?>
+                            <li class="empty"><i>No branches added</i></li>
+                            <?php endif; ?>
+                        </ul>
                     </div>
-                <? endforeach; ?>
+                <?php endforeach; ?>
             </div>
+
+            <?php if (env('ENABLE_DEPLOY')): ?>
             <div class="pure-u-md-1-2 pure-u-xl-1-3 vmenu">
-                <h3>Сервера</h3>
-                <a href="/web/slot/create/?pId=<?=$id ?>" class="pure-button pure-button-primary">Новый релизный сервер</a>
-                <a href="/web/project/slots/<?=$id ?>" class="pure-button">Релизные сервера</a>
+                <h3><?= __('servers') ?></h3>
+                <a href="/web/slot/create/?pId=<?=$id ?>" class="pure-button pure-button-primary"><?= __('add_release_server') ?></a>
+                <a href="/web/project/slots/<?=$id ?>" class="pure-button"><?= __('release_servers_list') ?></a>
                 <ul>
-                    <? foreach ($slots as $slot): ?>
+                    <?php foreach ($slots as $slot): ?>
                     <li><?=$slot->getName() ?>, <?=$slot->getHost().':'.$slot->getPath() ?></li>
-                    <? endforeach; ?>
+                    <?php endforeach; ?>
                 </ul>
             </div>
+            <?php endif; ?>
             
         </div>
     </div>

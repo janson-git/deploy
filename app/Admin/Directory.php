@@ -2,6 +2,7 @@
 
 namespace Admin;
 
+use Git\GitRepository;
 use Service\Data;
 use Service\Util\StringHelper;
 
@@ -17,7 +18,7 @@ class Directory
     {
         $this->deployUser = 'deploy';
         $this->wwwUser    = 'www-data';
-        $this->sitesDir   = dirname(getcwd()).'/';
+        $this->sitesDir   = REPOS_DIR . '/';
     }
     
     /**
@@ -153,7 +154,7 @@ class Directory
         $time = filemtime($this->sitesDir . $dir);
         
         $result = [
-            'back'      => StringHelper::lvdateBack($time),
+            'back'      => StringHelper::howMuchAgo($time),
             'date'      => date('d-m h:i', $time),
             'timestamp' => $time,
         ];
@@ -161,7 +162,7 @@ class Directory
         return $result;
     }
     
-    public function update($dir)
+    public function update($dir): string
     {
         if (!$this->checkDir($dir)) {
             return 'not a dir';
@@ -174,12 +175,10 @@ class Directory
 //                exec('sudo /bin/chown -R ' . $this->deployUser . ':' . $this->wwwUser . ' ' . $this->sitesDir . $dir . ' 2>&1',
 //                    $result);
 //            }
-        
-        exec('cd ' . $this->sitesDir . $dir . ' && git fetch -p 2>&1', $result);
-        exec('cd ' . $this->sitesDir . $dir . ' && git merge --ff-only -X theirs origin/' . $branch . ' 2>&1', $result);
-        exec('cd ' . $this->sitesDir . $dir . ' && touch ./', $result);
-        
-        return implode("\n", $result);
+
+        $repo = new GitRepository($this->sitesDir . $dir);
+
+        return $repo->update($branch);
     }
     
     public function fix($dir, $realClear = null)
@@ -201,7 +200,7 @@ class Directory
         return implode("\n", $result);
     }
     
-    public function checkout($dir, $branch)
+    public function checkout($dir, $branch): string
     {
         if (!$this->checkDir($dir)) {
             return 'not a dir';
@@ -212,17 +211,21 @@ class Directory
         }
         
         if (strpos($branch, '/')) {
-            $branch = end(explode('/', $branch)) . ' ' . $branch;
+            $array = explode('/', $branch);
+            $branch = end($array) . ' ' . $branch;
         }
-        
-        $result[] = shell_exec('cd ' . $this->sitesDir . $dir . ' && git fetch -p 2>&1');
-        exec('cd ' . $this->sitesDir . $dir . ' && git checkout -B ' . $branch . ' 2>&1', $result);
-        
+
+        $repo = new GitRepository($this->sitesDir . $dir);
+
+        $result[] = $repo->fetch()->getLastOutput();
+        $result[] = $repo->checkoutBranchOrResetAndCheckout($branch)->getLastOutput();
+
         return implode("\n", $result);
     }
     
     public function createRepo($name)
     {
+        var_dump($name);exit;
         $repoDir  = 'repo/';
         $commands = array(
             ['cd ' . $this->sitesDir . $repoDir, 'mkdir ' . $this->sitesDir . $repoDir],
@@ -277,5 +280,67 @@ class Directory
         }
         
         return $result;
+    }
+
+    public function cloneRepository(string $repositoryPath, string $dirName): string
+    {
+        if (file_exists($this->sitesDir . $dirName)) {
+            $dirName .= date('Ymd_His');
+        }
+
+        $newRepoDir = $this->sitesDir . $dirName;
+        $commands = array(
+            ['mkdir ' . $newRepoDir, ''],
+            ['pwd ', ''],
+        );
+
+        $result = [];
+        $state  = 0;
+
+        $dir = 'cd ' . $this->sitesDir;
+
+        $log = function ($c, $data) use (&$result) {
+            $result[] = array(
+                'com' => $c,
+                'res' => $data,
+            );
+        };
+
+        foreach ($commands as $cData) {
+            list ($command, $pill) = $cData;
+            if ($state) {
+                break;
+            }
+            if (substr($command, 0, 3) == 'cd ') {
+                $dir = $command;
+            }
+
+            $eCommand = $dir . ' && ' . $command . ' 2>&1';
+            unset ($res);
+            exec($eCommand, $res, $state);
+            $log($command, !$state ? ($res ? implode('<br>', $res) : 'ok') : 'fail: ' . implode('<br>', $res));
+
+            if ($state && $pill) {
+                unset ($res);
+                exec($dir . ' && ' . $pill, $res, $state);
+                $log($command . ' pill => ' . $pill,
+                    !$state ? ($res ? implode('<br>', $res) : 'ok') : 'fail: ' . implode('<br>', $res));
+                unset ($res);
+                exec($eCommand, $res, $state);
+                $log($command . ' recall',
+                    !$state ? ($res ? implode('<br>', $res) : 'ok') : 'fail: ' . implode('<br>', $res));
+            }
+        }
+
+        $repo = new GitRepository($this->sitesDir);
+        $repo->cloneRemoteRepository($repositoryPath, $dirName);
+
+        $log('clone remote repository', $repo->getLastOutput());
+
+        $output = [];
+        foreach ($result as $item) {
+            $output[] = $item['com'] . "\n" . $item['res'];
+        }
+        return implode("\n", $output);
     }
 }

@@ -1,20 +1,27 @@
-<?
+<?php
 /**
  * @var $id
  * @var $sandboxReady
  * @var $branches
  * @var $pId
  * @var $pack \Service\Pack
- *
+ * @var $this \Admin\DoView
  */
+
+use Service\Breadcrumbs\BreadcrumbsFactory;
+
+$this
+    ->addBreadcrumb(BreadcrumbsFactory::makeProjectListBreadcrumb())
+    ->addBreadcrumb(BreadcrumbsFactory::makeProjectPageBreadcrumb($pack->getProject()))
+    ->addBreadcrumb(BreadcrumbsFactory::makePackPageBreadcrumb($pack));
 ?>
 
-<style type="text/css">
+<style>
     .pure-button {
         margin-top: 0.3em;
     }
 
-    .button-danger {
+    .btn-danger {
         margin-top: 0.8em;
     }
     
@@ -25,70 +32,92 @@
     .inactive {
         color: #888;
     }
+
+    .separator {
+        border-bottom: 1px solid #999;
+        height: 7px;
+        margin-bottom: 5px;
+    }
 </style>
+
+<div class="pure-g">
+    <div class="pure-u-1">
+        <section class="top-page-nav">
+            <a href="/web/project/show/<?= $pack->getProject()->getId() ?>" class="pure-button btn-secondary-outline btn-s">
+                <i class="fa-solid fa-arrow-left"></i> <?= __('back_to_pack_list') ?>
+            </a>
+        </section>
+    </div>
+</div>
 
 <div class="pure-g">
     
     <div class="pure-u-1 pure-u-md-2-3 bset">
-        <h3>Сборки</h3>
+        <h3><?= __('builds') ?></h3>
         <div class="pure-g">
-            <? foreach ($pack->getCheckPoints() as $cpId => $checkPoint): ?>
-                <div class="pure-u-1 pure-u-lg-1-2 pure-u-xl-1-3">
+            <?php foreach ($pack->getCheckPoints() as $cpId => $checkPoint): ?>
+                <div class="pure-u-1 pure-u-lg-1-2 pure-u-xl-1-3 build-card">
                     <div>
                         <div><?= $cpId ?></div>
-                        <? foreach ($checkPoint->getCommands() as $command): ?>
+                        <div class="separator"></div>
+                        <?php foreach ($checkPoint->getCommands() as $command): ?>
                             <a href="/web/command/?command=<?=$command->getId() ?>&context=<?=$command->getContext()->serialize() ?>"
-                               class="pure-button <?= $command->isPrimary() ? 'pure-button-primary': '' ?> <?= $command->isDanger() ? 'button-danger': '' ?> "
-                               <?= $command->isConfirmRequired() ? 'onclick="return confirm(\'Точно хочешь '.$command->getHumanName().'?\')"' : '' ?>>
+                               class="pure-button <?= $command->isPrimary() ? 'btn-primary': '' ?> <?= $command->isDanger() ? 'btn-danger': '' ?> "
+                               <?= $command->isConfirmRequired()
+                                   ? 'onclick="return confirm(\'Are you sure to '.$command->getHumanName().'?\')"'
+                                   : 'onclick="$(this).addClass(\'btn-in-action\')"'
+                               ?>>
                                 <?= $command->getHumanName() ?>
                             </a><br>
-                        <? endforeach; ?>
+                        <?php endforeach; ?>
                     </div>
                 </div>
-            <? endforeach; ?>
+            <?php endforeach; ?>
         </div>
     </div>
-    
+
+    <?php if (env('ENABLE_DEPLOY')): ?>
     <div class="pure-u-1 pure-u-md-1-3 bset">
-        <h3>Разливка</h3>
-        <? if ($lastCheckpoint = $pack->getLastCheckPoint()): ?>
+        <h3><?= __('deploy') ?></h3>
+        <?php if ($lastCheckpoint = $pack->getLastCheckPoint()): ?>
             <div><?= $lastCheckpoint->getName() ?></div>
-            <? foreach ($pack->getDeployCommands() as $command): ?>
+            <div class="separator"></div>
+            <?php foreach ($pack->getDeployCommands() as $command): ?>
                 <div>
                     <a href='/web/command/?command=<?=$command->getId() ?>&context=<?=$command->getContext()->serialize() ?>'
-                       class="pure-button <?= $command->isPrimary() ? 'pure-button-primary' : '' ?>"
+                       class="pure-button <?= $command->isPrimary() ? 'btn-primary' : '' ?>"
                     ><?= $command->getHumanName() ?></a>
                 </div>
-            <? endforeach; ?>
-        <? endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
+    <?php endif; ?>
     
     <div class="pure-u-1 pure-u-md-2-3 bset">
-        <h3>Ветки (<?= count($branches) ?>)</h3>
-        <a href="/web/branches/addBranch/<?= $pId ?>?packId=<?= $id ?>" class="pure-button pure-button-primary">
-            Добавить ветки</a>
-        <a href="/web/branches/removeBranch/<?= $pId ?>?packId=<?= $id ?>" class="pure-button ">Убрать ветки</a>
-        <a href="/web/branches/forkPack/<?= $pId ?>?packId=<?= $id ?>" class="pure-button ">Форкнуть пак</a>
+        <h3><?= __('branches_in_pack') ?> (<?= count($branches) ?>)</h3>
+        <a href="/web/branches/addBranch/<?= $pId ?>?packId=<?= $id ?>" class="pure-button btn-primary">Add branches</a>
+        <a href="/web/branches/removeBranch/<?= $pId ?>?packId=<?= $id ?>" class="pure-button ">Remove branches</a>
+        <a href="/web/branches/forkPack/<?= $pId ?>?packId=<?= $id ?>" class="pure-button ">Fork pack</a>
         <ul>
-            <? foreach ($branches as $branchName => $repos): ?>
+            <?php foreach ($branches as $branchName => $repos): ?>
                 <li class="<?= !$repos ? 'inactive' : '' ?>"><?= $branchName ?>
                     <a style="cursor: pointer;"
                        onclick="$(this).parent().find('div').toggle()">
                         (<?= count($repos) ?>) <small><?=array_sum(array_column($repos, 0)) ?> < master > <?=array_sum(array_column($repos, 1)) ?></small>
                     </a>
                     <div style="display: none; background: #cccccc; padding: 0.2em"> 
-                        <? foreach ($repos as $repo => $toMasterStatus): ?>
+                        <?php foreach ($repos as $repo => $toMasterStatus): ?>
                             <?=$toMasterStatus[0] ?> < <b><?= $repo?></b> > <?=$toMasterStatus[1] ?> <br>
-                        <? endforeach; ?>
+                        <?php endforeach; ?>
                     </div>
                 </li>
-            <? endforeach; ?>
+            <?php endforeach; ?>
         </ul>
     </div>
     
     <div class="pure-u-1 pure-u-md-1-3 bset">
-        <h3>Управление паком</h3>
-        <? foreach ($pack->getPackCommands() as $command): ?>
+        <h3><?= __('pack_controls') ?></h3>
+        <?php foreach ($pack->getPackCommands() as $command): ?>
             <div>
                 <form action="/web/command/" method="get">
                     <input type="hidden" name="command" value="<?=$command->getId() ?>">
@@ -97,16 +126,18 @@
                     <?php if(!empty($question['field'])): ?>
                         <input type="hidden" class="js-question-<?=$question['field']?>" name="userData[<?=$question['field']?>]" value="<?=($question['placeholder'] ?? '')?>">
                     <?php endif; ?>
-                    <button <?=$command->isConfirmRequired() ? 'onclick="return confirm(\'Точно хочешь '.strtolower($command->getHumanName()).'?\')"' : '' ?>
-                       class="pure-button <?= $command->isDanger() ? 'button-danger' : '' ?>"
+                    <button <?=$command->isConfirmRequired() ? 'onclick="return confirm(\'Are you sure to run '.strtolower($command->getHumanName()).'?\')"' : '' ?>
+                       class="pure-button <?= $command->isDanger() ? 'btn-danger' : '' ?>"
                         <?php if(!empty($question['field']) && !empty($question['question'])): ?>
                             onclick="answer=prompt('<?= ($question['question'] ?? '')?>', '<?=($question['placeholder'] ?? '')?>');if(!answer)return false;document.getElementsByClassName('js-question-<?=$question['field']?>')[0].value=answer"
+                        <?php else: ?>
+                            onclick="$(this).addClass('btn-in-action')"
                         <?php endif; ?>
                     >
                         <?= $command->getHumanName() ?>
                     </button>
                 </form>
             </div>
-        <? endforeach; ?>
+        <?php endforeach; ?>
     </div>
 </div>

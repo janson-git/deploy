@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Interaction\Web\Controller;
-
 
 use Admin\App;
 use Commands\Command\Pack\CheckpointCreateCommand;
@@ -42,18 +40,17 @@ class PackController extends AuthControllerProto
         }
         
         $this->pack = $pack;
-        $this->setSubTitle('<a href="/web/project/show/' . $this->pack->getProject()->getId() . '">Проект ' . $this->pack->getProject()->getName().'</a>');
     }
     
-    public function showAction()
+    public function show()
     {
         $this->template = 'index';
-        $this->indexAction();
+        $this->index();
     }
     
-    public function indexAction()
+    public function index()
     {
-        $this->setTitle('Пакет ' . $this->pack->getName());
+        $this->setTitle('<i class="fa-solid fa-file-lines"></i>' . __('pack') . " '{$this->pack->getName()}'");
         $node = $this->pack->getNode();
         $packReposByBranches = $node->getToMasterStatus($this->pack->getBranches());
 

@@ -45,7 +45,7 @@ class ProjectController extends AuthControllerProto
     
     public function index()
     {
-        $this->setTitle('Проекты');
+        $this->setTitle( '<i class="fa-solid fa-folder-tree"></i>' . __('projects'));
         
         $projects = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
         $packsData    = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->readCached();
@@ -63,7 +63,7 @@ class ProjectController extends AuthControllerProto
     
     public function slots () 
     {
-        $this->setTitle('Релизные сервера');
+        $this->setTitle(__('release_servers'));
         $this->setSubTitle($this->project->getName());
         
         $slots = $this->project->getSlotsPool()->loadProjectSlots()->validate()->getSlots();
@@ -76,7 +76,7 @@ class ProjectController extends AuthControllerProto
     
     public function show()
     {
-        $this->setTitle($this->project->getName());
+        $this->setTitle('<i class="fa-solid fa-folder-open"></i>' . $this->project->getName());
         $this->project->getSlotsPool()->loadProjectSlots();
         $this->project->initPacks();
         
@@ -84,6 +84,7 @@ class ProjectController extends AuthControllerProto
         $fetchCommand->setContext((new CommandContext())->setProject($this->project));
         
         $this->response([
+            'project' => $this->project,
             'fetchCommand' => $fetchCommand,
             'id'        => $this->projectId,
             'setData'   => $this->project->getPaths(),

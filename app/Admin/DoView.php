@@ -2,13 +2,13 @@
 
 namespace Admin;
 
+use Service\Breadcrumbs\Breadcrumb;
+use Service\Menu\MenuItem;
 use \Slim\View;
 
 class DoView extends View
 {
-    /**
-     * @var App
-     */
+    /** @var App */
     private $app;
     
     /**
@@ -21,19 +21,41 @@ class DoView extends View
     
     protected function loadMenu()
     {
-        $menu = array(
-            '/web/project'     => 'Проекты',
-            '/web/slot'        => 'Сервера',
-            '/web/deploy'      => 'Git',
-            '/web/scopes'      => 'Конфиги',
-        );
-        
-        
+        $menu = [];
+
+        $projectsItem = new MenuItem(__('menu.projects'), '/web/project', [
+            '#/web/project/*#',
+            '#/web/pack/*#',
+            '#/web/branches/addBranch#',
+            '#/web/branches/removeBranch#',
+            '#/web/branches/forkPack#',
+            '#/web/branches/createPack#',
+        ]);
+        $projectsItem->setIconClass('fa-solid fa-folder-tree');
+        $menu[] = $projectsItem;
+
+        if (env('ENABLE_DEPLOY')) {
+            $menu[] = new MenuItem(__('menu.servers'), '/web/slot');
+        }
+        if (env('ENABLE_EDIT_CONFIGURATIONS')) {
+            $menu[] = new MenuItem(__('menu.configurations'), '/web/scopes');
+        }
+
+        $gitItem = new MenuItem(__('menu.git'), '/web/deploy');
+        $gitItem->setIconClass('fa-solid fa-code-branch');
+        $menu[] = $gitItem;
+
         if ($this->app->auth->isAuth()) {
-            $menu = ['/web/user' => 'Хомяк &#128057;'] + $menu;
-            $menu['/web/auth/logout'] = 'Выйти';     
+            $itemProfile = new MenuItem('Profile &#128057;', '/web/user', ['#web/user/*#']);
+            $itemProfile->setIconClass('fa-solid fa-user');
+
+            $itemLogout = new MenuItem(__('logout'), '/web/auth/logout');
+            $itemLogout->setIconClass('fa-solid fa-right-from-bracket');
+
+            array_unshift($menu, $itemProfile);
+            array_push($menu, $itemLogout);
         } else {
-            $menu['/web/auth/login'] = 'Войти';
+            $menu[] = new MenuItem(__('login'), '/web/auth/login');
         }
         
         $this->set('mainMenu', $menu);
@@ -76,7 +98,7 @@ class DoView extends View
     
     public function subRender($template, $data)
     {
-        return parent::render($template . '.php', $data);
+        return parent::render("{$template}.php", $data);
     }
     
     public static function parse($data)
@@ -95,7 +117,7 @@ class DoView extends View
             
             $assoc = array_keys($data) !== range(0, count($data) - 1);
             foreach ($data as $k => $item) {
-                $res [] = ($assoc ? '<b>' . $k . '</b>: ' : '') . self::parse($item);
+                $res [] = ($assoc ? "<b>{$k}</b>: " : '') . self::parse($item);
             }
             
             return $res ? implode('<br />', $res) : '';
@@ -110,6 +132,15 @@ class DoView extends View
         }
         
         return 'Closure';
+    }
+
+    public function addBreadcrumb(Breadcrumb $breadcrumb): DoView
+    {
+        $items = $this->get('breadcrumbs');
+        $items[] = $breadcrumb;
+        $this->set('breadcrumbs', $items);
+
+        return $this;
     }
 }
  

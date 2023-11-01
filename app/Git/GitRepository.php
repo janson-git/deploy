@@ -1,10 +1,4 @@
 <?php
-/**
- * Default implementation of IGit interface
- *
- * @author  Jan Pecha, <janpecha@email.cz>
- * @license New BSD License (BSD-3), see file license.md
- */
 
 namespace Git;
 
@@ -14,12 +8,12 @@ use User\Auth;
 
 class GitRepository
 {
-    /** @var  string */
+    /** @var string */
     private $repository;
     
     private $path;
 
-    /** @var  string|NULL  @internal */
+    /** @var string|NULL @internal */
     private $cwd;
     
     
@@ -27,9 +21,7 @@ class GitRepository
     
     private $lastOutput = '';
     
-    /**
-     * @var Fs
-     */
+    /**  @var Fs */
     private $fs;
     
     private $sshKeyPath = '';
@@ -43,8 +35,6 @@ class GitRepository
      */
     public function __construct($repository)
     {
-        GitException::INIT;
-        
         if (basename($repository) === '.git') {
             $repository = dirname($repository);
         }
@@ -319,6 +309,11 @@ class GitRepository
         return $this->begin()->run('git checkout -b ', $name)->end();
     }
 
+    public function checkoutBranchOrResetAndCheckout($name)
+    {
+        return $this->begin()->run('git checkout -B ', $name)->end();
+    }
+
     /**
      * @param string $prefix
      * @return string|null
@@ -552,7 +547,21 @@ class GitRepository
         
         return $this->begin()->run("git push $remote", $params)->end();
     }
-    
+
+    /**
+     * Clone remote repository to local dir.
+     * `git clone <repo_path> <dir>`
+     *
+     * @param  string $remoteRepo
+     * @param  string $dir
+     *
+     * @throws GitException
+     * @return self
+     */
+    public function cloneRemoteRepository($remoteRepo, $dir): self
+    {
+        return $this->begin()->run("git clone {$remoteRepo} \"$dir\"")->end();
+    }
     
     /**
      * @param  $cmd
@@ -611,7 +620,7 @@ class GitRepository
         $args = func_get_args();
         $cmd  = $this->processCommand($args);
         $this->fs->exec($cmd, $output, $ret, __METHOD__);
-        $this->lastOutput = $output;
+        $this->lastOutput = is_string($output) ? $output : implode("\n", $output);
         
         if ($ret !== 0) {
             $this->exception("Command '$cmd' failed on " . $this->repository , $output);
@@ -710,7 +719,16 @@ class GitRepository
         
         return true;
     }
-    
+
+    public function update($branch)
+    {
+        $output = [];
+        $output[] = $this->begin()->run('git fetch -p 2>&1')->getLastOutput();
+        $output[] = $this->begin()->run("git merge --ff-only -X theirs origin/{$branch} 2>&1")->getLastOutput();
+        $output[] = $this->begin()->run("touch ./")->getLastOutput();
+
+        return implode("\n", $output);
+    }
     
     /**
      * @param  string /path/to/repo.git | host.xz:foo/.git | ...
@@ -789,7 +807,7 @@ class GitRepository
     public function getBehindStatus($branch)
     {
         $this->begin()->run('git rev-list --left-right --count origin/master...'.$branch)->end();
-        return preg_split('/\s+/', implode('', $this->lastOutput)); 
+        return preg_split('/\s+/', $this->lastOutput);
     }
     
     /**

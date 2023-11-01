@@ -13,7 +13,7 @@ class CheckpointCreateCommand extends CommandProto
     public function prepare()
     {
         $sandbox = $this->context->getPack();
-        $this->checkpointName = 'build-' . $sandbox->getName() . '-' . date('Ymd-His');
+        $this->checkpointName = $sandbox->getName() . '-' . date('Ymd-His');
         $sandbox->loadSandboxRepos();
         $sandbox->cloneMissedRepos();
     }
@@ -36,6 +36,6 @@ class CheckpointCreateCommand extends CommandProto
     
     public function getHumanName()
     {
-        return 'Создать новую сборку';
+        return __('create_new_build');
     }
 }
