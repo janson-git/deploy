@@ -34,3 +34,5 @@ I'll be pleased to help you, send me pull requests and money ;)
 This tool was not fully-futuristic designed and contains some ugly and unused code written years ago.
 
 But it works =)
+
+ ,,,_^._.^,,,
