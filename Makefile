@@ -12,6 +12,8 @@ down: ## Down containers
 	docker-compose down
 
 install: ## Setup app before use it
+	docker-compose build
+	composer install
 	if [ ! -f .env ] ; then \
 		cp .env.example .env \
 	; fi
