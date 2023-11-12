@@ -99,6 +99,11 @@ abstract class CommandProto
         return [];
     }
 
+    public function hasQuestion(): bool
+    {
+        return !empty($this->isQuestion());
+    }
+
     /**
      * For indicate danger actions in interface
      * @return bool

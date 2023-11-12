@@ -50,11 +50,10 @@ $view
                                 <i class="fa-regular fa-file-lines"></i> {{ $pack->getName() }}
                             </a>
 
-                            <a href="{{ $pack->prepareCommand(new \Commands\Command\Pack\RemovePackWithData)->getLink() }}"
-                               class="pure-button btn-danger-outline btn-s right"
-                               onclick="return confirm('Do you really want delete pack?')">
-                                {{ __('delete') }}
-                            </a>
+                            @include('./components/commandButton.blade.php', [
+                                'command' => $pack->prepareCommand(new \Commands\Command\Pack\RemovePackWithData),
+                                'classes' => 'btn-s right btn-danger-outline',
+                            ])
                         </div>
                         <ul class="branch-list">
                             @if (!empty($branches))

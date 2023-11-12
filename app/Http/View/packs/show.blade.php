@@ -62,14 +62,8 @@ $view
                         <div class="separator"></div>
 
                         @foreach ($checkPoint->getCommands() as $command)
-                            <a href="/commands/apply?command={{ $command->getId() }}&context={{ $command->getContext()->serialize() }}"
-                               class="pure-button {{ $command->isPrimary() ? 'btn-primary': '' }} {{ $command->isDanger() ? 'btn-danger': '' }} "
-                               {!! $command->isConfirmRequired()
-                                   ? 'onclick="return confirm(\'Are you sure to ' . $command->getHumanName() . '?\')"'
-                                   : 'onclick="$(this).addClass(\'btn-in-action\')"'
-                               !!}>
-                                {{ $command->getHumanName() }}
-                            </a><br>
+                            @include('./components/commandButton.blade.php', ['command' => $command])
+                            <br>
                         @endforeach
                     </div>
                 </div>
@@ -85,9 +79,7 @@ $view
             <div class="separator"></div>
             @foreach ($pack->getDeployCommands() as $command)
                 <div>
-                    <a href='/commands/apply?command={{ $command->getId() }}&context={{ $command->getContext()->serialize() }}'
-                       class="pure-button {{ $command->isPrimary() ? 'btn-primary' : '' }}"
-                    >{{ $command->getHumanName() }}</a>
+                    @include('./components/commandButton.blade.php', ['command' => $command])
                 </div>
             @endforeach
         @endif
@@ -96,6 +88,7 @@ $view
 
     <div class="pure-u-1 pure-u-md-2-3 bset">
         <h3>{{ __('branches_in_pack') }} ({{ count($branches) }})</h3>
+
         <a href="/branches/add/{{ $pId }}/{{ $id }}" class="pure-button btn-primary">Add branches</a>
         <a href="/branches/remove/{{ $pId }}/{{ $id }}" class="pure-button ">Remove branches</a>
         <a href="/branches/fork-pack/{{ $pId }}/{{ $id }}" class="pure-button ">Fork pack</a>
@@ -120,34 +113,11 @@ $view
         <h3>{{ __('pack_controls') }}</h3>
         @foreach ($pack->getPackCommands() as $command)
             <div>
-                <form action="/commands/apply" method="get">
-                    <input type="hidden" name="command" value="{{ $command->getId() }}">
-                    <input type="hidden" name="context" value="{{ $command->getContext()->serialize() }}">
-                    <?php $question = $command->isQuestion(); ?>
-                    @if(!empty($question['field']))
-                        <input type="hidden" class="js-question-{{ $question['field'] }}"
-                               name="userData[{{ $question['field'] }}]"
-                               value="{{ $question['placeholder'] ?? '' }}">
-                    @endif
-
-                    @if ($command->isConfirmRequired())
-                        <button onclick="confirmed=confirm('Are you sure to run {{ strtolower($command->getHumanName()) }} ?'); if (!confirmed) return false; window.spinnerOn(this);"
-                                class="pure-button {{ $command->isDanger() ? 'btn-danger' : '' }}"
-                        >
-                            {{ $command->getHumanName() }}
-                        </button>
-                    @else
-                        <button class="pure-button {{ $command->isDanger() ? 'btn-danger' : '' }}"
-                                @if (!empty($question['field']) && !empty($question['question']))
-                                    onclick="answer=prompt('{{ $question['question'] ?? '' }}', '{{ $question['placeholder'] ?? '' }}'); if (!answer) return false; window.spinnerOn(this); document.getElementsByClassName('js-question-{{ $question['field'] }}')[0].value=answer"
-                                @else
-                                    onclick="window.spinnerOn(this)"
-                                @endif
-                        >
-                            {{ $command->getHumanName() }}
-                        </button>
-                    @endif
-                </form>
+            @if($command->hasQuestion())
+                @include('./components/commandButtonWithQuestion.blade.php', ['command' => $command])
+            @else
+                @include('./components/commandButton.blade.php', ['command' => $command])
+            @endif
             </div>
         @endforeach
     </div>

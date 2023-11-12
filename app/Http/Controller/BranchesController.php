@@ -27,6 +27,9 @@ class BranchesController  extends AbstractController
     /** @var Pack */
     private $pack;
 
+    /** @var array */
+    private $packBranches = [];
+
     private function prepare(int $projectId, ?int $packId = null): void
     {
         $this->project = Project::getById($projectId);
@@ -41,6 +44,7 @@ class BranchesController  extends AbstractController
         // in other actions: add/remove branches, fork pack - Pack ID should be presents
         if ($packId) {
             $this->pack = Pack::getById($packId);
+            $this->packBranches = $this->pack->getBranches();
         }
     }
 
@@ -92,7 +96,7 @@ class BranchesController  extends AbstractController
         // [branch_name] => [ repo_name => repo_name, repo_name2 => repo_name2 ]
         $branches = $this->project->getNode()->getRepoDirsByBranches();
 
-        $packReposByBranches = $this->node->getToMasterStatus($this->pack->getBranches());
+        $packReposByBranches = $this->node->getToMasterStatus($this->packBranches);
 
         if ($this->pack) {
             $this->setTitle(__('pack') . " '{$this->pack->getName()}'");
@@ -104,7 +108,7 @@ class BranchesController  extends AbstractController
                 'project'  => $this->project,
                 'pack'     => $this->pack ?? null,
                 'selected' => [],
-                'packBranches' => $this->pack->getBranches(),
+                'packBranches' => $this->packBranches,
                 'branches' => $branches,
                 'branchesData' => $packReposByBranches
             ]);
