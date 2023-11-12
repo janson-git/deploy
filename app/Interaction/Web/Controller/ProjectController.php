@@ -5,17 +5,10 @@ namespace Interaction\Web\Controller;
 
 
 use Admin\App;
-use Commands\Command\Project\FetchProjectRepos;
-use Commands\CommandContext;
-use Service\Pack;
 use Service\Project;
-use Service\Node;
-use Service\Data;
 
 class ProjectController extends AuthControllerProto
 {
-    protected $rootDir;
-    
     /**
      * @var
      */
@@ -33,19 +26,13 @@ class ProjectController extends AuthControllerProto
         $this->projectId = $this->p('id', $this->app->itemId);
         if ($this->projectId) {
             try {
-                $this->project = new Project($this->projectId);
-                $this->project->init();       
+                $this->project = Project::getById($this->projectId);
             } catch (\Exception $e) {
                 $this->notFound($e->getMessage());
             }
         }
         
         parent::before();
-    }
-
-    public function index()
-    {
-        throw new \Exception('Moved to Http namespace! You need to fix this link!');
     }
     
     public function slots () 
@@ -60,74 +47,13 @@ class ProjectController extends AuthControllerProto
             'id' => $this->projectId,
         ]);
     }
-    
-    public function show()
-    {
-        $this->setTitle('<i class="fa-solid fa-folder-open"></i>' . $this->project->getName());
-        $this->project->getSlotsPool()->loadProjectSlots();
-        $this->project->initPacks();
-        
-        $fetchCommand = new FetchProjectRepos();
-        $fetchCommand->setContext((new CommandContext())->setProject($this->project));
-        
-        $this->response([
-            'project' => $this->project,
-            'fetchCommand' => $fetchCommand,
-            'id'        => $this->projectId,
-            'setData'   => $this->project->getPaths(),
-            'packs' => $this->project->getPacks(),
-            'slots' => $this->project->getSlotsPool()->getSlots(),
-        ]);
-    }
 
-    /**
-     * @TODO: LOOKS LIKE COULD BE REMOVED! BUT CHECK CAREFULLY!!!!
-     */
-    public function fetch()
-    {
-        $id = $this->p('id', $this->app->itemId);
-        
-        $projects = (new Data(App::DATA_PROJECTS));
-        $projects->setReadFrom(__METHOD__);
-        $projects->read();
-        $projectsDirs = $projects->getData();
-        $dirs         = $projectsDirs[$id];
-        
-        $node = new Node();
-        $node->setDirs($dirs);
-        $node->subLoad();
-        $node->loadRepos();
-        $node->loadBranches();
-        
-        $result = [];
-        
-        foreach ($node->getRepos() as $repo) {
-            $start = microtime(1);
-            $repo->fetch();
-            $result[$repo->getRepositoryPath()] = round(microtime(1) - $start, 4);
-        }
-        
-        if ($this->p('return')) {
-            $this->app->redirect($this->app->request->getReferrer());
-            return;
-        }
-        
-        $this->response([
-            'pId'    => $this->project->getId(),
-            'result' => $result,
-        ]);
-    }
-
-    /**
-     * @TODO: LOOKS LIKE COULD BE REMOVED! BUT CHECK CAREFULLY!!!!
-     */
     public function removeBranch()
     {
         $id = $this->p('id', $this->app->itemId);
         $branchName = $this->p('branch');
 
-        $project = new Project($id);
-        $project->init();
+        $project = Project::getById($id);
         $dirs = $project->getProjectRootDirs();
 
         $node = $project->getNode();

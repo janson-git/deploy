@@ -1,20 +1,12 @@
 <?php
 
-
 namespace Commands\Command\Pack;
-
 
 use Commands\Command\CommandProto;
 use Commands\CommandConfig;
 
 class RemoveCheckpoint extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $branchName    = $this->context->getCheckpoint()->getName();
@@ -41,12 +33,12 @@ class RemoveCheckpoint extends CommandProto
         return __('remove_build');
     }
     
-    public function isConfirmRequired()
+    public function isConfirmRequired(): bool
     {
         return true;
     }
 
-    public function isDanger()
+    public function isDanger(): bool
     {
         return true;
     }

@@ -2,7 +2,7 @@
 /**
  * @var $data \Slim\Helper\Set
  * @var $user array
- * @var $this \Admin\DoView
+ * @var $this \Admin\View
  */
 
 $currentPath = $this->app->getRequest()->getUri()->getPath();
@@ -109,11 +109,10 @@ $currentPath = $this->app->getRequest()->getUri()->getPath();
                 </button>
                 <div class="pure-g logs-cont" id="logs-container">
                     <?php foreach ($_logs as $info): ?>
-                        <div class="pure-u-1-3">
+                        <div class="pure-u-1">
                              <div style="word-break: break-all; padding: 0.3em">
-                                 <?= $info[0] ?: '_' ?>
+                                 <?= $info ?>
                              </div>
-                        </div><div class="pure-u-2-3"><?= \Admin\DoView::parse($info[1]) ?></div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

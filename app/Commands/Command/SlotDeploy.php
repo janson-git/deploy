@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command;
-
 
 use Commands\CommandConfig;
 use Commands\CommandFlow;
@@ -14,12 +12,7 @@ class SlotDeploy extends DeployCommandProto
      * @var CommandProto[]
      */
     protected $commands = [];
-    
-    public function prepare()
-    {
-        
-    }
-    
+
     public function run()
     {
         if (!$this->context->getSlot()) {
@@ -58,13 +51,13 @@ class SlotDeploy extends DeployCommandProto
     public function getHumanName()
     {
         if ($this->context->getSlot()) {
-            return 'Разлить на ' . $this->context->getSlot()->getName();
+            return 'Deploy to ' . $this->context->getSlot()->getName();
         }
         
-        return 'Ошибка: слот не указан';
+        return 'Error: slot is not defined';
     }
     
-    public function isPrimary()
+    public function isPrimary(): bool
     {
         return true;
     }

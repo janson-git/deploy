@@ -21,7 +21,7 @@ class BreadcrumbsFactory
         return new Breadcrumb(
             $project->getName(),
             'fa-solid fa-folder-open',
-            '/web/project/show/' . $project->getId()
+            '/projects/' . $project->getId()
         );
     }
 
@@ -30,7 +30,7 @@ class BreadcrumbsFactory
         return new Breadcrumb(
             $pack->getName(),
             'fa-solid fa-file-lines',
-            '/web/pack/' . $pack->getId()
+            '/packs/' . $pack->getId()
         );
     }
 }

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command;
-
 
 use Commands\Command\Build\BuildReleaseByDirectories;
 use Commands\Command\Delivery\SourcesBuildArchiveCreate;
@@ -15,11 +13,6 @@ class MakeBuildForDownload extends DeployCommandProto
      * @var CommandProto[]
      */
     protected $commands = [];
-    
-    public function prepare()
-    {
-        
-    }
     
     public function run()
     {
@@ -39,7 +32,7 @@ class MakeBuildForDownload extends DeployCommandProto
     
     public function getHumanName()
     {
-        return "Собрать для выгрузки";
+        return __('build_to_download');
     }
     
     /**
@@ -54,7 +47,7 @@ class MakeBuildForDownload extends DeployCommandProto
         ];
     }
     
-    public function isPrimary()
+    public function isPrimary(): bool
     {
         return true;
     }

@@ -29,6 +29,16 @@ body {
     border: 0;border-bottom: 1px solid #eee;
 }
 
+.text-success {
+    color: #2b4;
+}
+.text-warning {
+    color: #d71;
+}
+.text-danger {
+    color: #c44;
+}
+
 /*** MAIN MENU ******/
 .pure-menu ul li i {
     width: 1.2em;
@@ -53,14 +63,27 @@ body {
     padding: 5px 10px;
 }
 
+#doneLog {
+    white-space: pre-wrap;
+}
+
+.header {
+    margin: 0;
+    color: #333;
+    text-align: center;
+    padding: 1em 2em 1em;
+    font-weight: 300;
+}
 .header h1 {
     border-bottom: 1px solid #ccc;
     padding-bottom: 5px;
     text-align: start;
+    margin: 0.2em 0;
+    font-size: 2.5em;
 }
-
 .header h2 {
     color: #999;
+    padding: 0;
 }
 
 .top-page-nav {
@@ -80,6 +103,27 @@ h1 i,
 .pack-link i {
     margin-right: 0.2em;
 }
+.text-overflow-ellipsis {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/***************************/
+/******** CONTENT **********/
+.content {
+    color:#111111;
+    margin: 0 auto;
+    padding: 0 2em;
+    margin-bottom: 50px;
+    line-height: 1.6em;
+}
+.content-subhead {
+    margin: 50px 0 20px 0;
+    font-weight: 300;
+    color: #888;
+}
+
 
 /***************************/
 /***** ANIMATIONS **********/
@@ -160,7 +204,8 @@ h1 i,
     position:fixed;
     left: 150px; /** menu block width */
     right: 0;
-    box-shadow: 0 5px 3px rgba(100,100,100, 0.2)
+    box-shadow: 0 5px 3px rgba(100,100,100, 0.2);
+    z-index: 10;
 }
 .breadcrumbs ul,
 .breadcrumbs ul li a,
@@ -218,11 +263,9 @@ h1 i,
 }
 
 /********************/
-/*** PROJECT CARD ***/
+/*** CARDS ***/
 
-.project-card,
-.pack-card,
-.build-card {
+.card {
     background-color: #fff;
     border-top: 5px solid #07e;
     border-radius: 0 0 10px 10px;
@@ -248,7 +291,7 @@ h1 i,
     padding-bottom: 0.6em;
     margin-bottom: 0.3em;
     border-bottom: 1px solid #ccc;
-    font-size: 1.6em;
+    font-size: 1.4em;
 }
 .project-card .empty,
 .pack-card .empty {

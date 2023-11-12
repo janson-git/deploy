@@ -1,130 +1,95 @@
 <?php
 
-
 namespace Service;
-
 
 use Admin\App;
 
 class Project
 {
-    private $name;
-    
+    /** @var int  */
     private $id;
-    
+    /** @var string */
+    private $name;
+
+    /** @var string[] */
     private $projectRootDirs;
+
+    /** @var string[] */
+    private $dirSets = [];
     
-    protected $dirSets = [];
-    
-    /**
-     * @var Pack[]
-     */
-    protected $packs = [];
-    
-    /**
-     * @var Node
-     */
+    /** @var Node */
     private $node;
     
-    /**
-     * @var SlotsPool
-     */
-    protected $slotsPool;
-    
-    /**
-     * Project constructor.
-     *
-     * @param $projectId
-     */
-    public function __construct($projectId)
+    /** @var SlotsPool */
+    private $slotsPool;
+
+    public function __construct() {}
+
+    public static function getById(int $id): self
     {
-        $this->setId($projectId);
+        $project = new self($id);
+        $project->setId($id);
+
+        return $project->init();
     }
-    
-    public function init()
+
+    public function init(): self
     {
-        if (!$this->id) {
-            throw new \Exception('Project id not set');
+        if ($this->id === null) {
+            throw new \Exception('Project ID not defined!');
         }
-        
+
         /* load project data */
-        $projects = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
-        if (!isset($projects[$this->id])) {
+        $projectsData = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
+        if (!isset($projectsData[$this->id])) {
             throw new \Exception('Project #' . $this->id . ' not found');
         }
         
         /* get project data */
-        $this->projectRootDirs = $projects[$this->id];
-        
+        $this->projectRootDirs = $projectsData[$this->id];
+
         /* boot node */
         $this->node = new Node();
         $this->node->setDirs($this->projectRootDirs);
     
         $this->slotsPool = new SlotsPool();
         $this->slotsPool->setProjectId($this->id);
+
+        return $this;
     }
-    
-    public function initPacks () 
-    {
-        $packs = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->readCached();
-        foreach ($packs as $id => $data) {
-            if ($data['pack'] == $this->id) {
-                $pack = new Pack();
-                $pack->setId($id);
-                $pack->init();
-                $this->packs[$id] = $pack;
-            }
-        }
-    }
-    
-    /**
-     * @return Node
-     */
-    public function getNode()
+
+    public function getNode(): ?Node
     {
         return $this->node;
     }
-    
-    /**
-     * @param Node $node
-     */
-    public function setNode($node)
-    {
-        $this->node = $node;
-    }
-    
-    /**
-     * @return mixed
-     */
-    public function getId()
+
+    public function getId(): ?int
     {
         return $this->id;
     }
-    
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
+
+    public function setId(int $id): self
     {
         $this->id = $id;
+        return $this;
     }
-    
-    /**
-     * @return array
-     */
-    public function getDirSets()
+
+    public function getDirSets(): array
     {
         return $this->dirSets;
     }
-    
-    /**
-     * @return mixed
-     */
-    public function getProjectRootDirs()
+
+    public function getProjectRootDirs(): ?array
     {
         return $this->projectRootDirs;
     }
-    
+
+    public function setProjectRootDirs(array $dirs): self
+    {
+        $this->projectRootDirs = $dirs;
+        return $this;
+    }
+
     public function getPaths()
     {
         return $this->projectRootDirs;
@@ -133,12 +98,20 @@ class Project
     /**
      * @return Pack[]
      */
-    public function getPacks()
+    public function getPacks(): array
     {
-        return $this->packs;
+        $packs = [];
+        $packsData = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->readCached();
+        foreach ($packsData as $id => $data) {
+            if ($data['project'] == $this->id) {
+                $packs[] = Pack::getById($id);
+            }
+        }
+
+        return $packs;
     }
     
-    public function getName($withId = true)
+    public function getName($withId = true): string
     {
         if (!$this->name) {
             $rootDirs = $this->projectRootDirs;
@@ -151,18 +124,28 @@ class Project
         return $this->name . ($withId ? ' #' . $this->id : '');
     }
     
-    public function getNameQuoted () 
+    public function getNameQuoted(): string
     {
         return preg_replace('/\W+/', '-', $this->getName());
     }
-    
-    /**
-     * @return SlotsPool
-     */
-    public function getSlotsPool()
+
+    public function getSlotsPool(): SlotsPool
     {
         return $this->slotsPool;
     }
-    
-    
+
+    public function save(): void
+    {
+        $projectsData = new Data(App::DATA_PROJECTS);
+        $projectsData->setReadFrom(__METHOD__);
+
+        $dirs = $this->projectRootDirs;
+        sort($dirs);
+
+        $projectId = $this->getId() ?? crc32(implode(',', $this->projectRootDirs));
+        $this->id = $projectId;
+
+        $projectsData->setData($projectsData->read() + [$projectId => $dirs]);
+        $projectsData->write(false);
+    }
 }

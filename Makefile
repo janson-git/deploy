@@ -12,6 +12,7 @@ down: ## Down containers
 	docker-compose down
 
 install: ## Setup app before use it
-	if [ ! -f .env ] ; then \
-		cp .env.example .env \
-	; fi
+	@if [ ! -f .env ] ; then \
+	@	cp .env.example .env \
+	@; fi
+	@echo "\n.env file created.\nProject ready to start. Type 'make up' to build and start use."

@@ -65,7 +65,7 @@ class GitCreateTag extends CommandProto
         $lastTag = $this->getLastTag();
         return $this->createQuestion(
             self::QUESTION_TAG,
-            'Введи желаемый тег (текущий: ' . trim($lastTag) . ')',
+            'Set up new tag. Last tag is ' . trim($lastTag),
             !empty($lastTag) ? $this->getNextVersion($lastTag) : '1.0.0'
         );
     }

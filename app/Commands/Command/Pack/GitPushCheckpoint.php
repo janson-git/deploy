@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command\Pack;
-
 
 use Admin\App;
 use Commands\Command\CommandProto;
@@ -11,12 +9,6 @@ use Service\Event\EventConfig;
 
 class GitPushCheckpoint extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $checkpoint = $this->context->getCheckpoint()->getName();
@@ -58,7 +50,7 @@ class GitPushCheckpoint extends CommandProto
         return __('push_to_git');
     }
     
-    public function isConfirmRequired()
+    public function isConfirmRequired(): bool
     {
         return true;
     }

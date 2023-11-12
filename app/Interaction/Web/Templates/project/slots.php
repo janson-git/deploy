@@ -1,4 +1,4 @@
-<? 
+<?php
 /**
  * @var $id int - project id
  * @var $slots \Service\Slot\SlotProto[]
@@ -13,7 +13,7 @@
         <a href="/web/project/show/<?=$id ?>">Перейти к проекту</a>
     </div>
     <div class="pure-u-1">
-        <? foreach ($slots as $slot): ?>
+        <?php foreach ($slots as $slot): ?>
             <div class="pure-u-1 pure-u-md-1-3">
                 <div style="margin: 1em">
                     <h2><?=$slot->getName() ?></h2>
@@ -21,6 +21,6 @@
                     <div><?=$slot->getState() ?></div>
                 </div>
             </div>
-        <? endforeach; ?>
+        <?php endforeach; ?>
     </div>
 </div>

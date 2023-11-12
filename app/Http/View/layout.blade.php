@@ -1,16 +1,13 @@
 <?php
-    /** @var \Admin\DoView $view */
-    /** @var \Slim\Http\Request $request */
-    $currentPath = $request->getUri()->getPath();
-/**
- * @var $user array
- */
+/** @var \Admin\View $view */
+/** @var \Slim\Http\Request $request */
+$currentPath = \request()->getUri()->getPath();
 ?><!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $_identify ?? '' ?> Config Server</title>
+    <title>{{ $_identify }} Config Server</title>
 
     <link href="/fontawesome/css/fontawesome.css" rel="stylesheet">
     <link href="/fontawesome/css/regular.css" rel="stylesheet">
@@ -33,51 +30,47 @@
         <span></span>
     </a>
     <div id="menu">
-<!--        <span id="loader"></span>-->
         <div class="pure-menu pure-menu-open">
-            <a class="pure-menu-heading" href="<?= isset($user) ? $user['url'] : '' ?>"><?= isset($user) ? $user['id'] : '' ?></a>
+            <a class="pure-menu-heading" href="{{ $user['url'] }}">{{ $user['id'] }}</a>
             <ul>
-                <?php foreach ( $mainMenu as $menuItem): ?>
+                @foreach ( $mainMenu as $menuItem)
                 <?php /** @var $menuItem \Service\Menu\MenuItem */ ?>
-                <li <?= $menuItem->isSelected() ? 'class="pure-menu-selected"' : '' ?>>
-                    <a href="<?=$menuItem->route ?>">
-                        <?php if ($menuItem->iconClass): ?>
-                            <i class="<?= $menuItem->iconClass ?> icon"></i>
-                        <?php else: ?>
+                <li {!! $menuItem->isSelected() ? 'class="pure-menu-selected"' : '' !!}>
+                    <a href="{{$menuItem->route }}">
+                        @if ($menuItem->iconClass)
+                            <i class="{{ $menuItem->iconClass }} icon"></i>
+                        @else
                             <i class="fa-solid icon"></i>
-                        <?php endif; ?>
-                        <span><?=$menuItem->title ?></span>
+                        @endif
+                        <span>{{$menuItem->title }}</span>
                     </a>
                 </li>
-                <?php endforeach; ?>
-                <?php if(0): ?>
-                <li class="menu-item-divided pure-menu-selected">
-                    <a href="#">Services</a>
-                </li>
-                <?php endif; ?>
+                @endforeach
             </ul>
         </div>
     </div>
+
     <div id="main">
 
         <div class="breadcrumbs pure-g">
-            <?php if ( $view->hasBreadcrumbs() ): ?>
+            @if ( $view->hasBreadcrumbs() )
             <div class="pure-u-4-5">
                 <ul>
-                    <?php foreach ($view->getBreadcrumbs() as $item): ?>
+                    @foreach ($view->getBreadcrumbs() as $item)
                     <?php /** @var $item \Service\Breadcrumbs\Breadcrumb */ ?>
                     <li>
-                        <?= $item->url !== null && $item->url !== $request->getUri()->getPath() ? "<a href=\"{$item->url}\">" : '<span>' ?>
-                            <?php if ($item->iconClass): ?>
-                            <i class="<?= $item->iconClass ?> icon"></i>
-                            <?php endif; ?>
-                            <p><?= $item->title ?></p>
-                        <?= $item->url !== null ? '</a>' : '<span>' ?>
+                        <?php $isActiveBreadcrumb = $item->url !== null && $item->url !== \request()->getUri()->getPath() ?>
+                        {!! $isActiveBreadcrumb ? "<a href=\"$item->url\">" : '<span>' !!}
+                            @if ($item->iconClass)
+                            <i class="{{ $item->iconClass }} icon"></i>
+                            @endif
+                            <p>{{ $item->title }}</p>
+                        {!! $isActiveBreadcrumb ? '</a>' : '<span>' !!}
                     </li>
-                    <?php endforeach; ?>
+                    @endforeach
                 </ul>
             </div>
-            <?php endif; ?>
+            @endif
 
             <div class="pure-u">
                 <div id="loader"></div>
@@ -85,63 +78,38 @@
         </div>
         <div class="breadcrumbs-placeholder pure-u-1"></div>
 
-
-        <?php if ( $header ||  $title): ?>
+        @if ( $header ||  $title)
         <div class="header">
-            <?php if ( $header): ?>
-                <h1><?= $header ?></h1>
-            <?php endif; ?>
-            <?php if ( $title ): ?>
-                <h2><?= $title ?></h2>
-            <?php endif; ?>
+            @if ( $header)
+                <h1>{!! $header !!}</h1>
+            @endif
+            @if ( $title )
+                <h2>{!! $title !!}</h2>
+            @endif
         </div>
-        <?php else : ?>
+        @else
             <br/>
-        <?php endif; ?>
-        <div class="content" style="color:#111111;">
+        @endif
+
+        <div class="content">
 
             @yield('content')
 
-            <?php if (isset($_logs)): ?>
+            @if (isset($_logs))
                 <button id="logs-toggle-button">
                     Show Debug Logs
                 </button>
                 <div class="pure-g logs-cont" id="logs-container">
-                    <?php foreach ($_logs as $info): ?>
-                        <div class="pure-u-1-3">
-                             <div style="word-break: break-all; padding: 0.3em">
-                                 <?= $info[0] ?: '_' ?>
-                             </div>
-                        </div><div class="pure-u-2-3"><?= \Admin\DoView::parse($info[1]) ?></div>
-                    <?php endforeach; ?>
+                    @foreach ($_logs as $info)
+                        <div class="pure-u-1">
+                            <div style="word-break: break-all; padding: 0.3em">
+                                {{ $info }}
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            <?php endif; ?>
-            <?php if(0): ?>
-            <h2 class="content-subhead">How to use this layout</h2>
-            
-            <h2 class="content-subhead">Now Let's Speak Some Latin</h2>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-            <div class="pure-g">
-                <div class="pure-u-1-4">
-                    <img class="pure-img-responsive" src="http://farm3.staticflickr.com/2875/9069037713_1752f5daeb.jpg" alt="Peyto Lake">
-                </div>
-                <div class="pure-u-1-4">
-                    <img class="pure-img-responsive" src="http://farm3.staticflickr.com/2813/9069585985_80da8db54f.jpg" alt="Train">
-                </div>
-                <div class="pure-u-1-4">
-                    <img class="pure-img-responsive" src="http://farm6.staticflickr.com/5456/9121446012_c1640e42d0.jpg" alt="T-Shirt Store">
-                </div>
-                <div class="pure-u-1-4">
-                    <img class="pure-img-responsive" src="http://farm8.staticflickr.com/7357/9086701425_fda3024927.jpg" alt="Mountain">
-                </div>
-            </div>
-            <h2 class="content-subhead">Try Resizing your Browser</h2>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-            <?php endif; ?>
+            @endif
+
         </div>
     </div>
 </div>

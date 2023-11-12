@@ -23,12 +23,12 @@ class ComposerStaticInit6b2977bdb537dc43c2d959446acbb642
         ),
         'S' => 
         array (
-            'Slim\\Views\\' => 11,
             'Slim\\Middleware\\' => 16,
             'Slim\\' => 5,
         ),
         'P' => 
         array (
+            'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
         ),
@@ -47,10 +47,6 @@ class ComposerStaticInit6b2977bdb537dc43c2d959446acbb642
         array (
             0 => __DIR__ . '/..' . '/eftec/bladeone/lib',
         ),
-        'Slim\\Views\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/slim/php-view/src',
-        ),
         'Slim\\Middleware\\' => 
         array (
             0 => __DIR__ . '/..' . '/tuupola/slim-basic-auth/src',
@@ -58,6 +54,10 @@ class ComposerStaticInit6b2977bdb537dc43c2d959446acbb642
         'Slim\\' => 
         array (
             0 => __DIR__ . '/..' . '/slim/slim/Slim',
+        ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/src',
         ),
         'Psr\\Http\\Message\\' => 
         array (

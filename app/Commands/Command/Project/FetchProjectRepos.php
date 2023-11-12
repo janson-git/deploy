@@ -9,12 +9,6 @@ use Commands\CommandConfig;
 
 class FetchProjectRepos extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $node = $this->context->getProject()->getNode();
@@ -25,7 +19,7 @@ class FetchProjectRepos extends CommandProto
             $repo->fetch();
             $this->runtime->log(microtime(1) - $start, $repo->getPath());
         }
-        
+
         return $this->runtime;
     }
     

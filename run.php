@@ -1,4 +1,8 @@
 <?php
+
+use Exceptions\AuthException;
+use Psr\Container\ContainerInterface;
+
 chdir(__DIR__);
 
 if ($_SERVER['REQUEST_URI'] === '/ping') {
@@ -22,26 +26,49 @@ $loader = require 'vendor/autoload.php';
 $loader->add('', 'app/');
 $loader->addPsr4('App\\', 'app/');
 
-//$container['view'] = new \Slim\Views\PhpRenderer('../templates/');
 $app = new \Admin\App([
-        'settings' => [
-            'displayErrorDetails' => true,
-        ],
+    'settings' => [
+        'displayErrorDetails' => true,
+        'determineRouteBeforeAppMiddleware' => true,
+    ],
+    'foundHandler' => function () {
+        // Converts request params to arguments for controller methods
+        return new \Admin\ArgumentsToActionStrategy();
+    },
+    'cookies' => function (ContainerInterface $container) {
+        return new \Service\Util\CookiesPipe();
+    },
+    'logger' => function (ContainerInterface $container) {
+        return new \Service\Logger();
+    },
+    'errorHandler' => function (ContainerInterface $container) {
+        return new \Service\ErrorHandler($container);
+    },
+    'phpErrorHandler' => function (ContainerInterface $container) {
+        return new \Service\ErrorHandler($container);
+    },
+//    'notAllowedHandler' => function (ContainerInterface $container) {
+//        return new \Service\ErrorHandler($container);
+//    },
+//    'notFoundHandler' => function (ContainerInterface $container) {
+//        return new \Service\ErrorHandler($container);
+//    },
+    'blade' => function () {
+        return new \eftec\bladeone\BladeOne(
+            './app/Http/View',
+            STORAGE_DIR . '/cache/compiles'
+        );
+    },
+    'view' => function (ContainerInterface $container) {
+        return new \Admin\View($container);
+    },
+    'auth' => function () {
+        $auth = new \User\Auth();
+        $auth->loadUser();
+
+        return $auth;
+    },
 ]);
-
-$renderer = new \Slim\Views\PhpRenderer('./app/Http/View', [], 'layout.php');
-$bladeRenderer = new \eftec\bladeone\BladeOne(
-    './app/Http/View',
-    STORAGE_DIR . '/cache/compiles');
-
-
-$container = $app->getContainer();
-$container['renderer'] = $renderer;
-$container['blade'] = $bladeRenderer;
-
-$view = new \Admin\DoView();
-$view->setApp($app);
-$container['view'] = $view;
 
 try {
     // BASIC AUTH
@@ -50,7 +77,7 @@ try {
         $hosts = array_map('trim', explode(',', $hosts));
 
         if (!env('HTTP_BASIC_AUTH_USER') || !env('HTTP_BASIC_AUTH_PASS')) {
-            $app->error('Failed to setup auth credentials for basic auth');
+            throw new AuthException('Failed to setup auth credentials for basic auth', 403);
         }
 
         $app->add(new \Slim\Middleware\HttpBasicAuthentication([
@@ -61,47 +88,29 @@ try {
         ]));
     }
 
-    // Define auth resource
-    $container = $app->getContainer();
-    $container['auth'] = function () {
-        return new \User\Auth();
-    };
+    // COMMON APP MIDDLEWARE TO PREPARE CALLABLE AND ROUTE WITH PARAMS
+    // TODO: when all NEW controllers will rid of 'before' and 'after' methods
+    // TODO:   possible this common middleware will become be unneeded
+    $app->add(\App\Http\Middleware\HandleControllerFlowWithBeforeAndAfter::class);
 
-//    $app->add(new \App\Http\Middleware\HandleRequestToRoute());
-
-    // NEW ROUTES HERE!
-    // TODO: можно отрефакторить и назначать через хелпер в стиле ларавеля
-    $app->get(
-        '/projects[/]',
-//        new \App\Http\Middleware\HandleRequestToRoute(),
-        [new \App\Http\Controller\ProjectsController(), 'index']
-    );//->via(\Slim\Http\Request::METHOD_GET, \Slim\Http\Request::METHOD_HEAD, \Slim\Http\Request::METHOD_POST);
-
-//    $app->map(
-//        '/projects((/):id)',
-////        new \App\Http\Middleware\HandleRequestToRoute(),
-//        [new \App\Http\Controller\ProjectsController(), 'show']
-//    )->via(\Slim\Http\Request::METHOD_GET, \Slim\Http\Request::METHOD_HEAD, \Slim\Http\Request::METHOD_POST);
-
-
-    // OLD COMMON ROUTE FOR ALL
-//    $app->map('/(:module(/)(:controller(/)(:action(/))(:id)))', [$app, 'doRoute'])
-//        ->via(\Slim\Http\Request::METHOD_GET, \Slim\Http\Request::METHOD_HEAD, \Slim\Http\Request::METHOD_POST);
-    $app->any('/[{module}[/[{controller}[/[{action}[/[{id}]]]]]]]', function ($request, $response, $args) use ($app) {
-        $callable = [$app, 'doRoute'];
-
-        call_user_func($callable, ...$args);
-    });
-//    $app->any('/(:module(/)(:controller(/)(:action(/))(:id)))', [$app, 'doRoute']);
-
-//    $app->notFound(function () use ($app) {
-//        echo $app->request->getResourceUri() . ' not found';
-//    });
+    $app->loadRoutes();
 
     $app->run();
 
 } catch (\Exception $e) {
-    echo 'GFGF';
-    echo $app->getContainer()->get('response')->getBody();
-    exit;
+    $response = $app->getResponse();
+
+    $container = $app->getContainer();
+    $bladeRenderer = $container->get('blade');
+
+    $output = $bladeRenderer->run('./error.blade.php', [
+        'code' => $response->getStatusCode(),
+        'reason' => $response->getReasonPhrase(),
+        'exception' => $e,
+    ]);
+    $response = $response
+        ->withStatus($e->getCode())
+        ->write($output);
+
+    $app->respond($response);
 }

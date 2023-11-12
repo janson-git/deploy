@@ -2,21 +2,23 @@
 
 namespace Service\Menu;
 
+use Admin\App;
+
 class MenuItem
 {
-    public $route;
-    public $title;
-    public $patterns;
-    public $iconClass;
+    public string $route;
+    public string $title;
+    public array $matchPatterns;
+    public string $iconClass;
 
-    public function __construct(string $title, string $route, array $patterns = [])
+    public function __construct(string $title, string $route, array $matchPatterns = [])
     {
         $this->title = $title;
         $this->route = $route;
-        $this->patterns = $patterns;
+        $this->matchPatterns = $matchPatterns;
     }
 
-    public function setIconClass(string $iconClass)
+    public function setIconClass(string $iconClass): void
     {
         $this->iconClass = $iconClass;
     }
@@ -24,19 +26,19 @@ class MenuItem
     public function isSelected(): bool
     {
         $isSelected = false;
-        $currentPath = \Admin\App::getInstance()->getRequest()->getUri()->getPath();
+        $currentPath = App::getInstance()->getRequest()->getUri()->getPath();
         if ($currentPath === $this->route) {
             return true;
         }
 
-        foreach ($this->patterns as $pattern) {
-            if ($currentPath === $pattern || strpos($pattern, $currentPath) === 0) {
+        foreach ($this->matchPatterns as $pattern) {
+            if ($currentPath === $pattern) {
                 $isSelected = true;
                 break;
             }
 
             // check pattern as regex
-            if (substr($pattern, 0, 1) !== substr($pattern, -1)) {
+            if (strlen($pattern) < 3 || substr($pattern, 0, 1) !== substr($pattern, -1)) {
                 // this is not regex string. Skip it!
                 continue;
             }

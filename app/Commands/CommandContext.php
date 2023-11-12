@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands;
-
 
 use Service\Checkpoint;
 use Service\Pack;
@@ -24,9 +22,7 @@ class CommandContext
      */
     protected $checkpoint;
     
-    /**
-     * @var Pack
-     */
+    /** @var Pack|null */
     protected $pack;
     
     /**
@@ -41,19 +37,19 @@ class CommandContext
     
     private $data = [];
     
-    public function get ($key, $default = null)
+    public function get($key, $default = null)
     {
         return isset($this->data[$key]) ? $this->data[$key] : $default;
     }
     
-    public function set ($key, $value)
+    public function set($key, $value): self
     {
         $this->data[$key] = $value;
+        return $this;
     }
     
     public function serialize()
     {
-        
         return base64_encode(json_encode($this->getState()));
     }
     
@@ -66,7 +62,7 @@ class CommandContext
         }
         
         if ($this->checkpoint) {
-            $data[self::DATA_CHECKPOINT] = $this->checkpoint->getId();
+            $data[self::DATA_CHECKPOINT] = $this->checkpoint->getName();
         }
         
         if ($this->slot) {
@@ -91,9 +87,7 @@ class CommandContext
     public function bind($data)
     {
         if (isset($data[self::DATA_PACK])) {
-            $this->pack = new Pack();
-            $this->pack->setId($data[self::DATA_PACK]);
-            $this->pack->init();
+            $this->pack = Pack::getById($data[self::DATA_PACK]);
         }
         
         if (isset($data[self::DATA_CHECKPOINT]) && $this->pack) {
@@ -106,81 +100,51 @@ class CommandContext
         }
         
         if (isset($data[self::DATA_PROJECT])) {
-            $this->project = new Project($data[self::DATA_PROJECT]);
-            $this->project->init();
+            $this->project = Project::getById($data[self::DATA_PROJECT]);
         }
     }
     
-    
-    /**
-     * @return Pack
-     */
-    public function getPack()
+    public function getPack(): ?Pack
     {
         return $this->pack;
     }
-    
-    /**
-     * @param Pack $pack
-     */
-    public function setPack($pack)
+
+    public function setPack(Pack $pack): self
     {
         $this->pack = $pack;
+        return $this;
     }
     
-    /**
-     * @return Checkpoint
-     */
-    public function getCheckpoint()
+    public function getCheckpoint(): ?Checkpoint
     {
         return $this->checkpoint;
     }
     
-    /**
-     * @param Checkpoint $checkpoint
-     */
-    public function setCheckpoint($checkpoint)
+    public function setCheckpoint(Checkpoint $checkpoint): self
     {
         $this->checkpoint = $checkpoint;
+        return $this;
     }
-    
-    /**
-     * @return SlotProto
-     */
-    public function getSlot()
+
+    public function getSlot(): ?SlotProto
     {
         return $this->slot;
     }
     
-    /**
-     * @param SlotProto $slot
-     *
-     * @return $this
-     */
-    public function setSlot($slot)
+    public function setSlot(SlotProto $slot): self
     {
         $this->slot = $slot;
-        
         return $this;
     }
     
-    /**
-     * @return Project
-     */
-    public function getProject()
+    public function getProject(): ?Project
     {
         return $this->project;
     }
     
-    /**
-     * @param Project $project
-     *
-     * @return $this
-     */
-    public function setProject($project)
+    public function setProject(Project $project): self
     {
         $this->project = $project;
         return $this;
     }
-    
 }

@@ -1,12 +1,11 @@
 <?php
 
-
 namespace User;
 
-
+use Service\Auth\AuthInterface;
 use Service\Data;
 
-class Auth
+class Auth implements AuthInterface
 {
     const USER_ID = 'id';
     const USER_NAME = 'name';
@@ -107,7 +106,7 @@ class Auth
     /**
      * @return bool
      */
-    public function isAuth()
+    public function isAuthenticated(): bool
     {
         if($this->getUserId() !== 0 && $this->getUserId() !== self::USER_ANONIM_TOKEN){
             return true;
