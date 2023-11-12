@@ -1,4 +1,8 @@
 <?php
+
+use Exceptions\AuthException;
+use Psr\Container\ContainerInterface;
+
 chdir(__DIR__);
 
 if ($_SERVER['REQUEST_URI'] === '/ping') {
@@ -6,23 +10,65 @@ if ($_SERVER['REQUEST_URI'] === '/ping') {
     exit(0);
 }
 
-define('PRODUCTION', true);
-define('ROOT_DIR', __DIR__);
-define('STORAGE_DIR', __DIR__ . '/storage');
-define('REPOS_DIR', __DIR__ . '/storage/repos');
+const PRODUCTION = true;
+const ROOT_DIR = __DIR__;
+const SSH_KEYS_DIR = __DIR__ . '/ssh_keys';
+const STORAGE_DIR = __DIR__ . '/storage';
+const REPOS_DIR = __DIR__ . '/storage/repos';
+const SANDBOX_DIR = __DIR__ . '/storage/sandbox';
 
 require_once('app/helpers.php');
 require_once('debug.php');
 ini_set('date.timezone', 'UTC');
 
+/** @var \Composer\Autoload\ClassLoader $loader */
 $loader = require 'vendor/autoload.php';
 $loader->add('', 'app/');
+$loader->addPsr4('App\\', 'app/');
 
-$app = new \Admin\App(array(
-    'view' => (new \Admin\DoView()),
-));
+$app = new \Admin\App([
+    'settings' => [
+        'displayErrorDetails' => true,
+        'determineRouteBeforeAppMiddleware' => true,
+    ],
+    'foundHandler' => function () {
+        // Converts request params to arguments for controller methods
+        return new \Admin\ArgumentsToActionStrategy();
+    },
+    'cookies' => function (ContainerInterface $container) {
+        return new \Service\Util\CookiesPipe();
+    },
+    'logger' => function (ContainerInterface $container) {
+        return new \Service\Logger();
+    },
+    'errorHandler' => function (ContainerInterface $container) {
+        return new \Service\ErrorHandler($container);
+    },
+    'phpErrorHandler' => function (ContainerInterface $container) {
+        return new \Service\ErrorHandler($container);
+    },
+//    'notAllowedHandler' => function (ContainerInterface $container) {
+//        return new \Service\ErrorHandler($container);
+//    },
+//    'notFoundHandler' => function (ContainerInterface $container) {
+//        return new \Service\ErrorHandler($container);
+//    },
+    'blade' => function () {
+        return new \eftec\bladeone\BladeOne(
+            './app/Http/View',
+            STORAGE_DIR . '/cache/compiles'
+        );
+    },
+    'view' => function (ContainerInterface $container) {
+        return new \Admin\View($container);
+    },
+    'auth' => function () {
+        $auth = new \User\Auth();
+        $auth->loadUser();
 
-$app->view()->setApp($app);
+        return $auth;
+    },
+]);
 
 try {
     // BASIC AUTH
@@ -31,7 +77,7 @@ try {
         $hosts = array_map('trim', explode(',', $hosts));
 
         if (!env('HTTP_BASIC_AUTH_USER') || !env('HTTP_BASIC_AUTH_PASS')) {
-            $app->error('Failed to setup auth credentials for basic auth');
+            throw new AuthException('Failed to setup auth credentials for basic auth', 403);
         }
 
         $app->add(new \Slim\Middleware\HttpBasicAuthentication([
@@ -42,21 +88,29 @@ try {
         ]));
     }
 
-    // Define auth resource
-    $app->container->singleton('auth', function () {
-        return new \User\Auth();
-    });
+    // COMMON APP MIDDLEWARE TO PREPARE CALLABLE AND ROUTE WITH PARAMS
+    // TODO: when all NEW controllers will rid of 'before' and 'after' methods
+    // TODO:   possible this common middleware will become be unneeded
+    $app->add(\App\Http\Middleware\HandleControllerFlowWithBeforeAndAfter::class);
 
-    $app->map('/(:module(/)(:controller(/)(:action(/))(:id)))', [$app, 'doRoute'])
-        ->via(\Slim\Http\Request::METHOD_GET, \Slim\Http\Request::METHOD_HEAD, \Slim\Http\Request::METHOD_POST);
-
-    $app->notFound(function () use ($app) {
-        echo $app->request->getResourceUri() . ' not found';
-    });
+    $app->loadRoutes();
 
     $app->run();
 
 } catch (\Exception $e) {
-    echo $app->response()->getBody();
-    exit;
+    $response = $app->getResponse();
+
+    $container = $app->getContainer();
+    $bladeRenderer = $container->get('blade');
+
+    $output = $bladeRenderer->run('./error.blade.php', [
+        'code' => $response->getStatusCode(),
+        'reason' => $response->getReasonPhrase(),
+        'exception' => $e,
+    ]);
+    $response = $response
+        ->withStatus($e->getCode())
+        ->write($output);
+
+    $app->respond($response);
 }

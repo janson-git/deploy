@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command;
-
 
 use Commands\Command\Build\BuildReleaseByDirectories;
 use Commands\Command\Install\DeployBuildLocal;
@@ -17,12 +15,7 @@ class LocalDeploy extends DeployCommandProto
      * @var CommandProto[]
      */
     protected $commands = [];
-    
-    public function prepare()
-    {
-        
-    }
-    
+
     public function run()
     {
         foreach ($this->getSubcommands() as $command) {
@@ -44,7 +37,7 @@ class LocalDeploy extends DeployCommandProto
     
     public function getHumanName()
     {
-        return "Собрать и задеплоить локально";
+        return __('build_and_deploy_locally');
     }
     
     /**
@@ -61,7 +54,7 @@ class LocalDeploy extends DeployCommandProto
         ];
     }
     
-    public function isPrimary()
+    public function isPrimary(): bool
     {
         return true;
     }

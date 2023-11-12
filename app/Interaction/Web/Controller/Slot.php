@@ -1,11 +1,8 @@
 <?php
 
-
 namespace Interaction\Web\Controller;
 
-
 use Admin\App;
-use Interaction\Base\Controller\ControllerProto;
 use Service\Data;
 use Service\SlotFactory;
 
@@ -60,7 +57,7 @@ class Slot extends AuthControllerProto
         }
         
         
-        if ($this->app->request->isPost()) {
+        if ($this->app->getRequest()->isPost()) {
             $slotId = $slotId ?: crc32(microtime(1));
             
             $slotData = [

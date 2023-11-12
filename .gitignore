@@ -11,3 +11,4 @@ locks/
 .env
 /.ssh/*
 /.ssh/readme.md
+/storage/sandbox/

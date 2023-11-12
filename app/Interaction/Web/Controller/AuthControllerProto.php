@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Interaction\Web\Controller;
-
 
 use Interaction\Base\Controller\ControllerProto;
 use \Service\Data;
@@ -13,22 +11,24 @@ class AuthControllerProto extends ControllerProto
     {
         $data = (new Data('user'))->readCached();
 
+        /** @var \User\Auth $auth */
+        $auth = $this->app->getAuth();
+
         if(!$data && empty($data)){
-            $this->app->auth->setToken(\User\Auth::USER_ANONIM_TOKEN);
+            $auth->setToken(\User\Auth::USER_ANONIM_TOKEN);
         } else {
-            $this->app->auth->setToken($this->app->getCookie('tkn'));
+            $auth->setToken($this->app->getRequest()->getCookieParam('tkn'));
         }
 
-        $this->app->auth->loadUser();
-        $this->app->auth->setUser($this->app->auth->getUser());
+        $auth->loadUser();
+        $auth->setUser($auth->getUser());
 
-        if (!$this->app->auth->getUserId()) {
-            $this->app->redirect('/web/auth/login');
+        if (!$auth->isAuthenticated()) {
+            $this->app->stopAndRedirectTo('/web/auth/login');
         }
 
         if (!$this->isEnabled()) {
-            $this->app->redirect('/web/errors/403');
-            return;
+            $this->app->stopAndRedirectTo('/web/errors/403');
         }
 
         parent::before();

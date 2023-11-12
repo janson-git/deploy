@@ -8,8 +8,7 @@ use Service\Util\StringHelper;
 
 class Directory
 {
-    
-    protected $sitesDir = '/var/www/';
+    protected $sitesDir = null;
     
     protected $deployUser = null;
     protected $wwwUser    = null;
@@ -20,24 +19,18 @@ class Directory
         $this->wwwUser    = 'www-data';
         $this->sitesDir   = REPOS_DIR . '/';
     }
-    
-    /**
-     * @return string
-     */
-    public function getSitesDir()
+
+    public function getSitesDir(): string
     {
         return $this->sitesDir;
     }
-    
-    /**
-     * @param string $sitesDir
-     */
-    public function setSitesDir($sitesDir)
+
+    public function setSitesDir(string $sitesDir): void
     {
         $this->sitesDir = $sitesDir;
     }
     
-    public function scanDir()
+    public function scanDir(): array
     {
         $data = $this->doScanDir($this->sitesDir);
         
@@ -67,7 +60,7 @@ class Directory
         return $data;
     }
     
-    public function doScanDir($dir, $deep = 1, $prefix = '')
+    public function doScanDir($dir, $deep = 1, $prefix = ''): array
     {
         $dir = rtrim($dir, '/');
         $prefix = $prefix ? $prefix . '/' : '';
@@ -95,13 +88,12 @@ class Directory
         return $data;
     }
     
-    public function allData()
+    public function allData(): array
     {
-        
         return $this->scanDir();
     }
     
-    public function checkDir($dir)
+    public function checkDir(string $dir): bool
     {
         return is_dir($this->sitesDir . $dir);
     }
@@ -111,7 +103,7 @@ class Directory
      *
      * @return mixed
      */
-    public function getBranch($dir)
+    public function getBranch(string $dir)
     {
         if (!$this->checkDir($dir)) {
             return 'not a dir';
@@ -136,7 +128,7 @@ class Directory
         return array_filter($result);
     }
     
-    public function getCurrentBranch($dir)
+    public function getCurrentBranch($dir): string
     {
         $branches = $this->getBranch($dir);
         

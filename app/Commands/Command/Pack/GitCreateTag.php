@@ -36,7 +36,7 @@ class GitCreateTag extends CommandProto
             return;
         }
 
-        $sshPrivateKey = getcwd().'/ssh_keys/'.App::i()->auth->getUserLogin();
+        $sshPrivateKey = SSH_KEYS_DIR . '/' . App::i()->getAuth()->getUserLogin();
         if (!file_exists($sshPrivateKey)) {
             $this->runtime->log('specific ssh private key "'.$sshPrivateKey.'" not found. Used default.', 'git config');
             $sshPrivateKey = null;
@@ -65,7 +65,7 @@ class GitCreateTag extends CommandProto
         $lastTag = $this->getLastTag();
         return $this->createQuestion(
             self::QUESTION_TAG,
-            'Введи желаемый тег (текущий: ' . trim($lastTag) . ')',
+            'Set up new tag. Last tag is ' . trim($lastTag),
             !empty($lastTag) ? $this->getNextVersion($lastTag) : '1.0.0'
         );
     }
@@ -103,7 +103,7 @@ class GitCreateTag extends CommandProto
      */
     private function getLastTag() : ?string
     {
-        $sshPrivateKey = getcwd() . '/ssh_keys/' . App::i()->auth->getUserLogin();
+        $sshPrivateKey = SSH_KEYS_DIR . '/' . App::i()->getAuth()->getUserLogin();
         foreach ($this->context->getPack()->getRepos() as $id => $repo) {
             try {
                 $repo->setSshKeyPath($sshPrivateKey);

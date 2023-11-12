@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command\Pack;
-
 
 use Admin\App;
 use Commands\Command\CommandProto;
@@ -11,16 +9,10 @@ use Service\Event\EventConfig;
 
 class GitMergeToMaster extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $checkpoint = $this->context->getCheckpoint()->getName();
-        $sshPrivateKey = getcwd().'/ssh_keys/'.App::i()->auth->getUserLogin();
+        $sshPrivateKey = SSH_KEYS_DIR . '/' . App::i()->getAuth()->getUserLogin();
         
         if (!file_exists($sshPrivateKey)) {
             $this->runtime->log('specific ssh private key "'.$sshPrivateKey.'" not found. Used default.', 'git config');
@@ -60,15 +52,15 @@ class GitMergeToMaster extends CommandProto
     
     public function getHumanName()
     {
-        return 'Принять в мастер';
+        return __('accept_to_master');
     }
     
-    public function isConfirmRequired()
+    public function isConfirmRequired(): bool
     {
         return true;
     }
 
-    public function isDanger()
+    public function isDanger(): bool
     {
         return true;
     }

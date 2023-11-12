@@ -5,8 +5,7 @@ This is a simple self-written tool to simplify merge and deploy in today's reali
 
 ### Requires
 To get this awesome thing work you should have
-- the last "git" version installed and
-- "shot_open_tags" enabled on php.ini
+- the last "git" version installed. It used to work with repositories.
 
 ### Get Started
 
@@ -25,7 +24,7 @@ make up
    I recommend DO NOT USE your personal SSH key for that, but create new one for `deploy`.
    a. create ssh keys with ssh-keygen command
    b. upload .pub key part to your github account
-   c. put you private key part to your `deploy` app account on page  http://localhost:9088/web/user (click `Add SSH key` button)
+   c. put you private key part to your `deploy` app account on page  http://localhost:9088/user (click `Add SSH key` button)
 4. NOTE: now it now showed if SSH key already uploaded to app
 
 
@@ -33,7 +32,7 @@ make up
 
 Ok, app prepared, and we need add our first project to work with it
 1. **variant 1 (UI):** Add new repository which needed to create your project: 
-   - open UI on `Git` page (http://localhost:9088/web/deploy)
+   - open UI on `Git` page (http://localhost:9088/git)
    - click `Add repository` button
    - Now just write URL or SSH link (HTTPS `https://github.com/janson-git/deploy.git` or SSH `git@github.com:janson-git/deploy.git`) of your repository to input field and press the `Save` button 
 2. **OR variant 2 (terminal):** Go to `storage/repos` directory of your `deploy` app. This directory will contain local repositories of our projects. Clone repository that you want to use with `deploy`. Something like this:
@@ -42,7 +41,7 @@ Ok, app prepared, and we need add our first project to work with it
    git clone git@github.com:janson-git/deploy.git
    ```
 3. If previous step finished successfully, we can create new project for this repo form UI.
-4. Open in browser http://localhost:9088/web/project and click `Create new project`
+4. Open in browser http://localhost:9088/projects and click `Create new project`
 5. Find your cloned project directory in directory navigator. Navigate by click on folder names.
 6. When you found it (you will see branches list on that page), mark folder with checkbox and click on `Build Project`
 7. Right after that click 'Save Project`
@@ -52,9 +51,12 @@ Ok, app prepared, and we need add our first project to work with it
 
 Congratulations!
 It is time to create our first release branch!
+
+
 `deploy` works with PACKS and BUILDS.
 PACK - it is just kind of plan: branches list that you want to merge in release branch.
-BUILD - result of merge PACK branches to one branch. In fact `build` - it is release branch.
+BUILD - result of merging PACK branches to one branch. In fact `build` - it is release branch.
+
 
 `.gitconfig` file in project root directory contains username and email which will used as owner info for pushed release branches.
 
@@ -65,15 +67,19 @@ name = "Release Builder"
 email = "deploy@local"
 ```
 
-1. Ok, click on `Create new pack` button on your Project page
-2. Now you need to set release branch name
-3. For example, lets put `release-01` to pack name field
-4. Now check all branches that you want to add to your pack, and click `Save pack` button
+1. Let's create first pack! Click on `Create new pack` button on your Project page
+2. Now you need to set release branch name, let's put `release-01` to pack name field
+3. Mark with checkboxes all branches that you want to add to your pack, and click `Save pack` button
    Now app will fetch repository and create new local release branch with name like `build-release_01-20230331-214701`
    But it is still empty branch (equal to `master`) without pack branches right now
 5. Click `Merge branches` button to start merging process. If CONFLICT happens - read `RESOLVING MERGE CONFLICTS` doc below
 6. When all is ok, you can push release branch to repository. Just click on `Push build to repository` button
-7. Check remote repository, and you will see new release branch!
+7. Check remote repository, and you will see new release branch there!
+
+##### Note!
+
+When you need update _release_ branch with changes from working branches, just click on`Fetch repositories` to get changes and click `Merge branches` to update your _release_ branch.
+After that - just send this renewed _release_ branch to repository by click on `Push build to repository` 
 
 
 #### RESOLVING MERGE CONFLICTS

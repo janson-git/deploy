@@ -39,14 +39,12 @@ abstract class ControllerProto
     public function run()
     {
         if (method_exists($this, $this->action) && !method_exists(__CLASS__, $this->action)) {
-            $this->_doRun($this->action);
-            return;
+            return $this->_doRun($this->action);
         }
         
         $methodWithPostfix = $this->action . 'Action';
         if (method_exists($this, $methodWithPostfix)) {
-            $this->_doRun($methodWithPostfix);
-            return;
+            return $this->_doRun($methodWithPostfix);
         }
         
         $this->notFound($this->action);
@@ -56,8 +54,10 @@ abstract class ControllerProto
     {
         $this->_beforeAll();
         $this->before();
-        $this->$method();
+        $response = $this->$method();
         $this->after();
+
+        return $response;
     }
     
     
@@ -74,7 +74,8 @@ abstract class ControllerProto
         
         $tpl = $tpl ?: $this->template;
 
-        $this->app->render($this->controller . '/' . $tpl, $data);
+//        $this->app->view()->setTemplatesDirectory();
+        $this->app->view()->oldRender($this->controller . '/' . $tpl, $data);
         return;
     }
     
@@ -109,14 +110,8 @@ abstract class ControllerProto
         if ($name == 'id' && $this->app->itemId) {
             return $this->app->itemId;
         }
-        
-        $res = $this->app->request->get($name, null);
-        
-        if ($res !== null) {
-            return $res;
-        }
-        
-        return $this->app->request->post($name, $default);
+
+        return $this->app->getRequest()->getParam($name, $default);
     }
     
     /**
@@ -137,11 +132,11 @@ abstract class ControllerProto
     
     public function setTitle($title)
     {
-        $this->app->view()->setHeader($title);
+        $this->app->view()->setHeader('<span style="color: red; margin: 0 10px;" title="THIS PAGE HANLDED IN OBSOLETE CONTROLLER!">!</span>' . $title);
     }
     
     public function setSubTitle($subTitle)
     {
-        $this->app->view()->setTitle($subTitle);
+        $this->app->view()->setTitle('OLD!' . $subTitle);
     }
 }

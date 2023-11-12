@@ -29,10 +29,8 @@ class LastbuildController extends ApiProto
         
         $projectId = $projects[$projectName];
         
-        $project = new Project($projectId);
-        $project->init();
-        $project->initPacks();
-        
+        $project = Project::getById($projectId);
+
         $packs = $project->getPacks();
     
         $pack = null;

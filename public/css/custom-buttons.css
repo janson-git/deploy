@@ -101,6 +101,11 @@
     border: 1px solid rgb(66, 184, 221);
 }
 
+.btn-actionable {
+    /** it is just class to mark buttons for public/js/ui.js. Adds spinner on button by click */
+    /** used for buttons that start request, wait and redirects on other page */
+}
+
 /*** class .btn-in-action shows spinner on buttons ***/
 @keyframes btn-spinner {
     to {transform: rotate(360deg);}
@@ -108,7 +113,15 @@
 .btn-in-action {
     padding-right: 35px !important;
 }
-.btn-in-action:after {
+/** btn-action display hack #1 for buttons type of <input type="submit"> **/
+.btn-in-action + span.btn-action-holder-for-input {
+    position: relative;
+    right: 35px;
+    top: 7px;
+}
+.btn-in-action:after,
+/** btn-action display hack #2 for buttons type of <input type="submit"> **/
+.btn-in-action + span.btn-action-holder-for-input:after {
     display: inline-block;
     content: '';
     box-sizing: border-box;

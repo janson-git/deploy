@@ -14,7 +14,6 @@ class CheckpointCreateCommand extends CommandProto
     {
         $sandbox = $this->context->getPack();
         $this->checkpointName = $sandbox->getName() . '-' . date('Ymd-His');
-        $sandbox->loadSandboxRepos();
         $sandbox->cloneMissedRepos();
     }
     

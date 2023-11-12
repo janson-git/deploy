@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command\Pack;
-
 
 use Commands\Command\CommandProto;
 use Commands\CommandConfig;
@@ -10,11 +8,6 @@ use Git\GitRepository;
 
 class CheckpointMergeBranches extends CommandProto
 {
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $pack           = $this->context->getPack();
@@ -76,7 +69,7 @@ class CheckpointMergeBranches extends CommandProto
         return __('merge_branches');
     }
     
-    public function isPrimary()
+    public function isPrimary(): bool
     {
         return true;
     }

@@ -15,3 +15,5 @@ install: ## Setup app before use it
 	if [ ! -f .env ] ; then \
 		cp .env.example .env \
 	; fi
+	docker-compose build
+	@echo "\n.env file created.\nProject ready to start. Type 'make up' to build and start use."

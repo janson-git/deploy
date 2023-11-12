@@ -7,12 +7,6 @@ use Commands\CommandConfig;
 
 class FetchSandbox extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         foreach ($this->context->getPack()->getProject()->getNode()->getRepos() as $id => $repo) {

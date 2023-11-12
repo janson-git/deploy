@@ -1,46 +1,27 @@
 <?php
 
-
 namespace Commands\Command;
 
-
-use Service\Checkpoint;
 use Commands\CommandRuntime;
 use Commands\CommandContext;
-use Service\Node;
-use Service\Pack;
 use Service\Slot\SlotProto;
 
 abstract class CommandProto
 {
-    /**
-     * @var CommandContext
-     */
+    /** @var CommandContext */
     protected $context;
     
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $allRoot;
     
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $errors = [];
     
-    /**
-     * @var CommandRuntime
-     */
+    /** @var CommandRuntime */
     protected $runtime;
     
     protected $data;
     
-    
-    /**
-     * BuildProto constructor.
-     *
-     * @param $allRoot
-     */
     public function __construct()
     {
         $this->allRoot = dirname(getcwd());
@@ -56,17 +37,11 @@ abstract class CommandProto
     abstract public function getId();
     abstract public function getHumanName();
     
-    /**
-     * @return SlotProto
-     */
-    public function getSlot () 
+    public function getSlot (): ?SlotProto
     {
         return $this->context->getSlot();
     }
     
-    /**
-     * @return array
-     */
     public function getRuntime()
     {
         return $this->runtime;
@@ -80,23 +55,17 @@ abstract class CommandProto
         return $this->errors;
     }
     
-    public function isPrimary ()
+    public function isPrimary(): bool
     {
         return false;
     }
     
-    /**
-     * @param CommandRuntime $runtime
-     */
-    public function setRuntime($runtime)
+    public function setRuntime(CommandRuntime $runtime): void
     {
         $this->runtime = $runtime;
     }
     
-    /**
-     * @return CommandContext
-     */
-    public function getContext()
+    public function getContext(): CommandContext
     {
         if (!$this->context) {
             $this->context = new CommandContext();
@@ -105,20 +74,17 @@ abstract class CommandProto
         return $this->context;
     }
     
-    /**
-     * @param CommandContext $context
-     */
-    public function setContext($context)
+    public function setContext(CommandContext $context): void
     {
         $this->context = $context;
     }
     
-    public function getLink ()
+    public function getLink(): string
     {
-        return '/web/command/?command='.$this->getId().'&context='.$this->getContext()->serialize();
+        return '/commands/apply?command='.$this->getId().'&context='.$this->getContext()->serialize();
     }
 
-    public function isConfirmRequired() 
+    public function isConfirmRequired(): bool
     {
         return false;
     }
@@ -128,16 +94,21 @@ abstract class CommandProto
      * @see CommandContext::USER_CONTEXT
      * @return array
      */
-    public function isQuestion() : array
+    public function isQuestion(): array
     {
         return [];
+    }
+
+    public function hasQuestion(): bool
+    {
+        return !empty($this->isQuestion());
     }
 
     /**
      * For indicate danger actions in interface
      * @return bool
      */
-    public function isDanger()
+    public function isDanger(): bool
     {
         return false;
     }

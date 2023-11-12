@@ -59,8 +59,18 @@
         $('#menuLink').removeClass('blink_me');
         $('#loader').hide();
         if (btn) {
-            $(btn).removeClass('btn-in-action')
+            setTimeout(
+                () => {
+                    $(btn).removeClass('btn-in-action');
+                },
+                500
+            );
         }
     };
+
+    window.$('.btn-actionable').on('click', function(el) {
+        // $(el.target).addClass('btn-in-action');
+        window.spinnerOn(el.target);
+    });
 
 }(this, this.document));

@@ -1,84 +1,46 @@
 <?php
 
-
 namespace Service;
-
 
 use Commands\Command\CommandProto;
 
+/**
+ * Checkpoint mapped to branch in repository
+ */
 class Checkpoint
 {
-    /**
-     * 
-     * @var Pack
-     */
+    /** @var Pack */
     protected $pack;
     
-    /**
-     * @var CommandProto[]
-     */
+    /** @var CommandProto[] */
     protected $commands = [];
     
     /**
-     * branch name
-     * 
+     * Branch name used as checkpoint ID
      * @var string
      */
     protected $id;
-    
-    /**
-     * Checkpoint constructor.
-     *
-     * @param Pack   $pack
-     * @param string $id
-     */
-    public function __construct(Pack $pack, $id)
+
+    public function __construct(Pack $pack, string $id)
     {
         $this->pack = $pack;
-        $this->id   = $id;
+        $this->id = $id;
     }
     
-    public function getName()
+    public function getName(): string
     {
         return $this->id; 
     }
     
-    /**
-     * @return mixed
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-    
-    /**
-     * @return Pack
-     */
-    public function getPack()
+    public function getPack(): Pack
     {
         return $this->pack;
     }
-    
-    /**
-     * @param Pack $pack
-     */
-    public function setPack($pack)
-    {
-        $this->pack = $pack;
-    }
-    
+
     /**
      * @return CommandProto[]
      */
-    public function getCommands()
+    public function getCommands(): array
     {
         return $this->commands;
     }
@@ -86,20 +48,21 @@ class Checkpoint
     /**
      * @param CommandProto[] $commands
      */
-    public function setCommands($commands)
+    public function setCommands(array $commands): self
     {
         foreach ($commands as $command) {
             $command->getContext()->setCheckpoint($this);
         }
         
         $this->commands = $commands;
+
+        return $this;
     }
     
-    public function getBuildPath () 
+    public function getBuildPath(): string
     {
         $projectName = $this->pack->getProject()->getNameQuoted();
-    
-        $checkpointName = $this->getName();
+        $checkpointName = $this->id;
         
         return "builds/{$projectName}/{$checkpointName}";
     }

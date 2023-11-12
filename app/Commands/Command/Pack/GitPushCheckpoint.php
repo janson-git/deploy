@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Commands\Command\Pack;
-
 
 use Admin\App;
 use Commands\Command\CommandProto;
@@ -11,17 +9,11 @@ use Service\Event\EventConfig;
 
 class GitPushCheckpoint extends CommandProto
 {
-    
-    public function prepare()
-    {
-        
-    }
-    
     public function run()
     {
         $checkpoint = $this->context->getCheckpoint()->getName();
         
-        $sshPrivateKey = getcwd().'/ssh_keys/'.App::i()->auth->getUserLogin();
+        $sshPrivateKey = SSH_KEYS_DIR . '/' . App::i()->getAuth()->getUserLogin();
     
         if (!file_exists($sshPrivateKey)) {
             $this->runtime->log('specific ssh private key "'.$sshPrivateKey.'" not found. Used default.', 'git config');
@@ -58,7 +50,7 @@ class GitPushCheckpoint extends CommandProto
         return __('push_to_git');
     }
     
-    public function isConfirmRequired()
+    public function isConfirmRequired(): bool
     {
         return true;
     }

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @var $slots
  */
@@ -11,14 +11,14 @@
     </div>
     <div class="pure-u-1">
         <div class="pure-g">
-            <? foreach ($slots as $slotId => $slot): ?>
+            <?php foreach ($slots as $slotId => $slot): ?>
                 <div class="pure-u-1-2">
                     #<?=$slotId ?>: <?= $slot['name']; ?>
                 </div>
                 <div class="pure-u-1-2">
                     <?= $slot['type']; ?>
                 </div>
-            <? endforeach; ?>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>
