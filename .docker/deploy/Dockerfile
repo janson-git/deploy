@@ -1,11 +1,3 @@
-#
-#--------------------------------------------------------------------------
-# Image Setup
-# $REF: $
-#--------------------------------------------------------------------------
-#
-#
-
 FROM php:8.1-fpm
 
 #
@@ -44,7 +36,7 @@ RUN echo "docker-php-ext-install"     && \
 #	docker-php-ext-install zip        && \
     pecl install -o -f amqp      && docker-php-ext-enable amqp && \
     pecl install -o -f redis     && docker-php-ext-enable redis     && \
-#    pecl install -o -f xdebug    && \
+    pecl install -o -f xdebug    && \
     docker-php-ext-configure intl            \
         && docker-php-ext-install intl          \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
@@ -88,14 +80,6 @@ ADD ./composer.sh        /usr/local/sbin/composer
 RUN sed -i 's/\r//'  /usr/local/sbin/composer && \
     chmod +x         /usr/local/sbin/composer
 
-# It not actual for composer2
-#RUN composer.phar global require "hirak/prestissimo" && \
-#    rm -rf /root/.composer/cache
-
-
-#ADD ./services /usr/local/etc/services
-#RUN cp -a /usr/local/etc/services/* /etc/service && chmod +x /etc/service/*/run
-
 ENV PATH /var/www:$PATH
 
 # ubuntu >= 16.10
@@ -104,8 +88,6 @@ ENV PUID ${PUID}
 RUN if [ -n "${PUID}" ] && [ "${PUID%:*}" != 0 ]; then \
   usermod -u ${PUID} www-data >/dev/null 2>&1 \
 ;fi
-
-RUN mkdir -p /var/sandbox && chown www-data:www-data /var/sandbox
 
 WORKDIR /var/www
 

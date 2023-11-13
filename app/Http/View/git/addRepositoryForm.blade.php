@@ -82,15 +82,15 @@ $view
                 .fail(function (jqxhr, textStatus, error) {
                     console.log(jqxhr, textStatus, error)
                     _this.log(
-                        jqxhr && jqxhr.responseJSON
-                            ? jqxhr.responseJSON.data
+                        jqxhr && jqxhr.responseJSON && jqxhr.responseJSON.error
+                            ? jqxhr.responseJSON.error
                             : (textStatus + ' ' + error)
                     );
                     spinnerOff(btn)
                 });
         },
         log: function (data, el) {
-            $('#doneLog').html(data);
+            $('#doneLog').html('<span class="text-error">' + data + '</span>');
         }
     }
 </script>

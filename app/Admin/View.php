@@ -4,9 +4,9 @@ namespace Admin;
 
 use eftec\bladeone\BladeOne;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
 use Service\Breadcrumbs\Breadcrumb;
 use Service\Menu\MenuItem;
+use Slim\Http\Response;
 
 class View
 {
@@ -104,7 +104,7 @@ class View
         return $this;
     }
 
-    public function render($template, $data = null): ResponseInterface
+    public function render($template, $data = null): Response
     {
         $container = $this->app->getContainer();
 
@@ -238,4 +238,3 @@ class View
         $this->templatesDir = $dir;
     }
 }
- 

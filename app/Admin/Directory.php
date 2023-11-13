@@ -36,18 +36,19 @@ class Directory
         
         $exclude = (new Data('deploy_exclude'))->setReadFrom(__METHOD__)->read();
         
-        foreach ($data as $name => &$item) {
-            $keys = array_flip(explode('/', $name));
+        foreach ($data as $dirName => &$item) {
+            $keys = array_flip(explode('/', $dirName));
             if (array_intersect_key($exclude, $keys)) {
-                unset($data[$name]);
+                unset($data[$dirName]);
             } else {
-                $time = $this->getUpdateTime($name);
+                $time = $this->getUpdateTime($dirName);
                 $item += [
-                    'branch' => $this->getBranch($name),
+                    'branch' => $this->getBranch($dirName),
                     'time'   => $time,
                     'idx'    => $time['timestamp'],
-                    'com'    => $this->getLastCommit($name),
-                    'remote' => $this->getRemotes($name),
+                    'com'    => $this->getLastCommit($dirName),
+                    'remote' => $this->getRemotes($dirName),
+                    'repoName' => $this->getFullRepoName($dirName),
                 ];
             }
         }
@@ -56,7 +57,7 @@ class Directory
         $idx  = array_column($data, 'idx');
         array_multisort($idx, SORT_DESC, $data, $keys);
         $data = array_combine($keys, $data);
-        
+
         return $data;
     }
     
@@ -127,7 +128,33 @@ class Directory
         
         return array_filter($result);
     }
-    
+
+    /**
+     * Suggests that full repo name contains owner name and repo name
+     * Like: owner/repo.git, janson-git/deploy.git
+     */
+    public function getFullRepoName($dir): string
+    {
+        $remotes = $this->getRemotes($dir);
+        $fullPath = array_shift($remotes);
+
+        $m = [];
+        if (preg_match('#\S+\s(\S+)\s.*#', $fullPath, $m)) {
+            $fullPath = $m[1];
+        }
+
+        // different ways to split https and ssh links
+        if (strpos($fullPath, 'https://') === 0) {
+            $parts = explode('/', $fullPath);
+            $nameParts = array_slice($parts, -2);
+            $repoFullName = implode('/', $nameParts);
+        } else {
+            $repoFullName = substr($fullPath, strpos($fullPath, ':') +1 );
+        }
+
+        return $repoFullName;
+    }
+
     public function getCurrentBranch($dir): string
     {
         $branches = $this->getBranch($dir);

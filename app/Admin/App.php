@@ -207,4 +207,16 @@ class App extends SlimApp
 
         return $this->lang[$lang][$key] ?? null;
     }
+
+    /**
+     * Stop application correctly, write logs
+     */
+    public function terminate(): void
+    {
+        file_put_contents(
+            LOGS_DIR . '/app.log',
+            implode("\n", $this->getLogger()->getLogs()),
+            FILE_APPEND
+        );
+    }
 }

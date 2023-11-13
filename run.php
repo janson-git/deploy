@@ -14,6 +14,7 @@ const PRODUCTION = true;
 const ROOT_DIR = __DIR__;
 const SSH_KEYS_DIR = __DIR__ . '/ssh_keys';
 const STORAGE_DIR = __DIR__ . '/storage';
+const LOGS_DIR = __DIR__ . '/logs';
 const REPOS_DIR = __DIR__ . '/storage/repos';
 const SANDBOX_DIR = __DIR__ . '/storage/sandbox';
 
@@ -113,4 +114,6 @@ try {
         ->write($output);
 
     $app->respond($response);
+} finally {
+    $app->terminate();
 }

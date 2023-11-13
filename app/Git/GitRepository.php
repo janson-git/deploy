@@ -784,7 +784,7 @@ class GitRepository
     private function exception($msg, $output = [])
     {
         $this->end();
-        App::i()->log("Error: ".$msg, __METHOD__);
+        App::i()->getLogger()->error("Error: $msg", ['method' => __METHOD__]);
         $e = new GitException($msg);
         $e->setOutput($output);
         throw $e;

@@ -108,7 +108,7 @@ class Auth implements AuthInterface
      */
     public function isAuthenticated(): bool
     {
-        if($this->getUserId() !== 0 && $this->getUserId() !== self::USER_ANONIM_TOKEN){
+        if ($this->getUserId() !== 0 && $this->getUserId() !== self::USER_ANONIM_TOKEN) {
             return true;
         }
         return false;
@@ -119,10 +119,14 @@ class Auth implements AuthInterface
      */
     public function isAnonim()
     {
-        if($this->getUserId() == self::USER_ANONIM_TOKEN){
+        if ($this->getUserId() == self::USER_ANONIM_TOKEN){
             return true;
         }
         return false;
     }
-    
+
+    public function isSshKeyExists(): bool
+    {
+        return file_exists(SSH_KEYS_DIR . '/' . $this->getUserLogin());
+    }
 }

@@ -35,7 +35,8 @@ body {
 .text-warning {
     color: #d71;
 }
-.text-danger {
+.text-danger,
+.text-error {
     color: #c44;
 }
 

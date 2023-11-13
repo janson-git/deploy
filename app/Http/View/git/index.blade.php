@@ -32,6 +32,9 @@ $view->addBreadcrumb(
                 <tr>
                     <td>
                         <p style="font-weight: bold; white-space: nowrap">{{ $dir }}</p>
+                        <p style="white-space: nowrap; color: #666;">
+                            <small>{{ $data['repoName'] }}</small>
+                        </p>
                         <small>
                             {{ __('last_update_at') }}:<br/>
                             {{ $data['time']['back'] }}<br/>
@@ -59,8 +62,7 @@ $view->addBreadcrumb(
                         <hr/>
                         <a onclick="$('.dev-tools-{{ crc32($dir) }}').toggle()">dev tools</a>
                         <div class="dev-tools-{{ crc32($dir) }}" style="display: none">
-                            <a class="pure-button" onclick='admin.fixGit("{{ $dir }}", this, 1)'>reset and delete
-                                files</a>
+                            <a class="pure-button" onclick='admin.fixGit("{{ $dir }}", this, 1)'>reset and delete files</a>
                         </div>
                         <hr/>
                         <small>{!! implode(" <br> ", $data['remote']) !!}</small>
