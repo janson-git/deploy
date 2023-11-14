@@ -20,9 +20,9 @@ class UsersController extends AbstractController
         
         $text = __('ssh_key_page_description');
         
-        if ($this->app->getRequest()->isPost()) {
+        if ($this->request->isPost()) {
             $key = $this->p('key');
-            $key = str_replace("\r\n", "\n", trim($key))."\n";
+            $key = str_replace("\r\n", "\n", trim($key)) . "\n";
             $filename = 'ssh_keys/'. $this->app->getAuth()->getUserLogin();
 
             if ($key && file_put_contents($filename, $key) !== false) {
@@ -36,5 +36,29 @@ class UsersController extends AbstractController
         return $this->view->render('users/addkey.blade.php', [
             'msg' => $text,
         ]);
+    }
+
+    public function committerInfo()
+    {
+        $this->setTitle(__('set_committer'));
+
+        if ($this->request->isPost()) {
+            $name = $this->p('name');
+            $email = $this->p('email');
+
+            $pattern = "#[^a-zA-Z0-9@\s]+#";
+            $name = preg_filter($pattern, '', $name);
+            $email = preg_filter($pattern, '', $email);
+
+            $user = $this->app->getAuth()->getUser();
+            $user->setCommitAuthorName($name);
+            $user->setCommitAuthorEmail($email);
+
+            $user->save();
+
+            return $this->response->withRedirect('/user');
+        }
+
+        return $this->view->render('users/setCommitterForm.blade.php');
     }
 }

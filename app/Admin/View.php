@@ -34,7 +34,7 @@ class View
         $this->app = App::getInstance();
     }
     
-    protected function loadMenu()
+    protected function loadMenu(): void
     {
         $menu = [];
 
@@ -110,10 +110,7 @@ class View
 
         $this->data['view'] = $this;
         $this->data['_identify'] = $this->app->getIdentify();
-        $this->data['user'] = [
-            'id' => $container->get('auth')->getUserLogin(),
-            'url' => '/user',
-        ];
+        $this->data['user'] = $this->app->getAuth()->getUser();
 
         $this->loadMenu();
 

@@ -20,6 +20,7 @@ $app->group('', function(\Admin\App $app) {
 
     $app->get('/[user[/]]', [UsersController::class, 'index']);
     $app->map(['GET', 'POST'], '/user/addkey[/]', [UsersController::class, 'addkey']);
+    $app->map(['GET', 'POST'], '/user/committer-data[/]', [UsersController::class, 'committerInfo']);
 
     $app->get('/projects[/]', [ProjectsController::class, 'index']);
     $app->get('/projects/{id:[0-9]+}[/]', [ProjectsController::class, 'show']);

@@ -8,6 +8,7 @@ return [
     'pack_controls' => 'Pack controls',
     'back_to_pack_list' => 'Back to pack list',
     'back_to_pack' => 'Back to pack',
+    'back_to_profile' => 'Back to profile',
     'filter_branches' => 'Filter branches',
     'fork_pack' => 'Fork pack',
     'back_to_git' => 'Back to Git',
@@ -67,4 +68,5 @@ return [
     'set_ssh_save_failed' => 'Failed to save SSH key',
     'ssh_key_page_description' => 'Generate SSH key pair, add pub-key into your git-storage (github, gitlab, etc..), private-key put here',
     'last_update_at' => 'Last update at',
+    'set_committer' => 'Set committer data',
 ];

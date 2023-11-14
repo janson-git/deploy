@@ -30,6 +30,8 @@ class App extends SlimApp
     const DATA_PACK_NAMES    = 'pack_names';
     const DATA_PACK_BUILDS   = 'pack_builds';
     const DATA_SLOTS         = 'slots';
+    const DATA_USERS         = 'users';
+    const DATA_SESSIONS      = 'sessions';
 
     /**
      * @return null|\Admin\App|\Slim\App

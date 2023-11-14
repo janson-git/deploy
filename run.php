@@ -109,8 +109,9 @@ try {
         'reason' => $response->getReasonPhrase(),
         'exception' => $e,
     ]);
+
     $response = $response
-        ->withStatus($e->getCode())
+        ->withStatus($e->getCode() ?: \Slim\Http\StatusCode::HTTP_INTERNAL_SERVER_ERROR)
         ->write($output);
 
     $app->respond($response);

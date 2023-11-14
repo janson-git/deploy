@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Admin\App;
 use Service\Auth\AuthInterface;
 use Service\Data;
 use Slim\Container;
@@ -30,7 +31,7 @@ class OnlyAuthenticated
     ) {
         $auth = $this->getAuth();
 
-        $data = (new Data('user'))->readCached();
+        $data = (new Data(App::DATA_USERS))->readCached();
 
         if(!$data && empty($data)){
             $auth->setToken(\User\Auth::USER_ANONIM_TOKEN);

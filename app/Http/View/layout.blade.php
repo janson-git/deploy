@@ -1,5 +1,6 @@
 <?php
 /** @var \Admin\View $view */
+/** @var \Service\User $user */
 /** @var \Slim\Http\Request $request */
 $currentPath = \request()->getUri()->getPath();
 ?><!doctype html>
@@ -31,7 +32,7 @@ $currentPath = \request()->getUri()->getPath();
     </a>
     <div id="menu">
         <div class="pure-menu pure-menu-open">
-            <a class="pure-menu-heading" href="{{ $user['url'] }}">{{ $user['id'] }}</a>
+            <a class="pure-menu-heading" href="/user">{{ $user->getLogin() }}</a>
             <ul>
                 @foreach ( $mainMenu as $menuItem)
                 <?php /** @var $menuItem \Service\Menu\MenuItem */ ?>

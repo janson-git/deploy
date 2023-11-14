@@ -2,6 +2,7 @@
 
 namespace App\Http\Controller;
 
+use Admin\App;
 use Service\Data;
 
 class AuthController extends AbstractController
@@ -18,12 +19,12 @@ class AuthController extends AbstractController
     
     public function login()
     {
-        $this->userData = new Data('user');
+        $this->userData = new Data(App::DATA_USERS);
         $this->sessionsData = new Data('sessions');
 
         $this->setTitle(__('login'));
 
-        if ($this->app->getRequest()->isPost()) {
+        if ($this->request->isPost()) {
             $status = false;
             $user = [];
 
@@ -56,7 +57,7 @@ class AuthController extends AbstractController
 
     public function logout()
     {
-        $this->userData = new Data('user');
+        $this->userData = new Data(App::DATA_USERS);
         $this->sessionsData = new Data('sessions');
 
         $token = $this->app->getRequest()->getCookieParam('tkn');
@@ -77,7 +78,7 @@ class AuthController extends AbstractController
 
     public function register()
     {
-        $this->userData = new Data('user');
+        $this->userData = new Data(App::DATA_USERS);
         $this->sessionsData = new Data('sessions');
 
         $this->setTitle(__('registration'));

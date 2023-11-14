@@ -2,8 +2,10 @@
 
 namespace User;
 
+use Admin\App;
 use Service\Auth\AuthInterface;
 use Service\Data;
+use Service\User;
 
 class Auth implements AuthInterface
 {
@@ -14,114 +16,72 @@ class Auth implements AuthInterface
     const USER_ANONIM = 'Anonimus';
     const USER_ANONIM_TOKEN = 'cfcd208495d565ef66e7dff9f98764da';
 
+    /** @var string */
     private $token = '';
+
+    /** @var ?User */
+    private $user;
     
-    private $user = [];
-    
-    /**
-     * @param string $token
-     */
-    public function setToken($token)
+    public function setToken(string $token): self
     {
         $this->token = $token;
+        return $this;
     }
-    
-    public function loadUser () 
+
+    public function loadUser(): void
     {
-        $sessionsData = (new Data('sessions'));
-        $auth = $sessionsData->readCached();
+        $auth = (new Data(App::DATA_SESSIONS))->readCached();
+
         if (isset($auth[$this->token])) {
-            $users = (new Data('user'))->readCached();
-            $this->user = $users[$auth[$this->token]];
+            $this->user = User::getByLogin($auth[$this->token]);
         }
 
-        if($this->token === self::USER_ANONIM_TOKEN){
+        if ($this->token === self::USER_ANONIM_TOKEN){
             $this->user = $this->getAnonim();
         }
     }
 
-    /**
-     * @return array
-     */
-    private function getAnonim(){
-
-        $user = [
-            self::USER_ID => self::USER_ANONIM_TOKEN,
-            self::USER_PASS => self::USER_ANONIM_TOKEN,
-            self::USER_LOGIN => self::USER_ANONIM
-        ];
-
-        return $user;
+    private function getAnonim(): User
+    {
+        return (new User())
+            ->setId(self::USER_ANONIM_TOKEN)
+            ->setLogin(self::USER_ANONIM);
     }
 
-
-    /**
-     * @return array
-     */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param array $user
-     */
-    public function setUser($user)
+    public function setUser(User $user): self
     {
         $this->user = $user;
+        return $this;
     }
 
-    /**
-     * @return int|mixed
-     */
-    public function getUserId()
+    public function getUserId(): ?string
     {
-        return isset($this->user[self::USER_ID]) ? $this->user[self::USER_ID] : 0;
+        return $this->user->getId();
     }
 
-    /**
-     * @return mixed|string
-     */
-    public function getUserName ()
+    public function getUserName(): string
     {
-        if (isset($this->user[self::USER_NAME]) && $this->user[self::USER_NAME]) {
-            return $this->user[self::USER_NAME];
-        }
-    
-        if (isset($this->user[self::USER_LOGIN]) && $this->user[self::USER_LOGIN]) {
-            return $this->user[self::USER_LOGIN];
-        }
-        
-        return self::USER_ANONIM;
+        return $this->user->getName()
+            ?? $this->user->getLogin()
+            ?? self::USER_ANONIM;
     }
 
-    /**
-     * @return mixed|string
-     */
-    public function getUserLogin ()
+    public function getUserLogin(): string
     {
-        return isset($this->user[self::USER_LOGIN]) ? $this->user[self::USER_LOGIN] : self::USER_ANONIM;
+        return $this->user->getLogin() ?? self::USER_ANONIM;
     }
 
-    /**
-     * @return bool
-     */
     public function isAuthenticated(): bool
     {
-        if ($this->getUserId() !== 0 && $this->getUserId() !== self::USER_ANONIM_TOKEN) {
+        if ($this->getUserId() && $this->getUserId() !== self::USER_ANONIM_TOKEN) {
             return true;
         }
-        return false;
-    }
 
-    /**
-     * @return bool
-     */
-    public function isAnonim()
-    {
-        if ($this->getUserId() == self::USER_ANONIM_TOKEN){
-            return true;
-        }
         return false;
     }
 

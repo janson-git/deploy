@@ -5,6 +5,7 @@
  * @var array $packsData
  * @var array $branches
  * @var array $data
+ * @var \Service\User $user
  * @var $view \Admin\View
  */
 
@@ -24,12 +25,12 @@ $view->addBreadcrumb(new Breadcrumb('Profile', 'fa-solid fa-user'));
         overflow-x: hidden;
         text-overflow: ellipsis;
     }
-    .ssh-key-ok {
+    .is-ok {
         font-size: 1.6em;
         color: #0a0;
         vertical-align: bottom;
     }
-    .ssh-key-missed {
+    .is-missed {
         font-size: 1.6em;
         color: #a00;
         vertical-align: bottom;
@@ -39,21 +40,51 @@ $view->addBreadcrumb(new Breadcrumb('Profile', 'fa-solid fa-user'));
 
     <div class="pure-g">
         <div class="pure-u-1-1">
-            <h2>SSH Key</h2>
+            <h2>Committer info</h2>
+            <p class="description">These name and email will be used in merge commits created in this app</p>
             <div>
-                @if ($sshKeyUploaded)
-                    <i class="fa-solid fa-check ssh-key-ok"></i> <span>Already uploaded</span>
+                @if ($user->getCommitAuthorName())
+                    <i class="fa-solid fa-check is-ok"></i> <span>{{ $user->getCommitAuthorName() }}</span>
                 @else
-                    <i class="fa-solid fa-xmark ssh-key-missed"></i> <span>Not uploaded</span>
+                    <i class="fa-solid fa-xmark is-missed"></i> <span>Not set</span>
                 @endif
             </div>
+            <div>
+                @if ($user->getCommitAuthorEmail())
+                    <i class="fa-solid fa-check is-ok"></i> <span>{{ $user->getCommitAuthorEmail() }}</span>
+                @else
+                    <i class="fa-solid fa-xmark is-missed"></i> <span>Not set</span>
+                @endif
+            </div>
+            <div class="line-separated">
+                <a class="pure-button" href="/user/committer-data">
+                    {{ __('set_committer') }}
+                </a>
+            </div>
         </div>
+
         <div class="pure-u-1-1">
-            <h2>{{ __('actions') }}</h2>
-            <a class="pure-button" href="/user/addkey">
-                {{ $sshKeyUploaded ? __('replace_ssh_key') : __('add_ssh_key') }}
-            </a>
+            <div class="pure-menu-separator"></div>
         </div>
+
+        <div class="pure-u-1-1">
+            <h2>SSH Key</h2>
+            <p class="description">Ssh key used to commit your branches to repositories. Also, ssh key allowed to work with repositories via ssh.</p>
+            <div>
+                @if ($sshKeyUploaded)
+                    <i class="fa-solid fa-check is-ok"></i> <span>Already uploaded</span>
+                @else
+                    <i class="fa-solid fa-xmark is-missed"></i> <span>Not uploaded</span>
+                @endif
+            </div>
+
+            <div class="line-separated">
+                <a class="pure-button" href="/user/addkey">
+                    {{ $sshKeyUploaded ? __('replace_ssh_key') : __('add_ssh_key') }}
+                </a>
+            </div>
+        </div>
+
     </div>
 
 </div>

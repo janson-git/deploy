@@ -27,7 +27,12 @@ class GitRepository
     private $sshKeyPath = '';
 
     private $ignoreKnownHosts = true;
-    
+
+    /** @var string|null */
+    private $commitAuthorName = null;
+    /** @var string|null */
+    private $commitAuthorEmail = null;
+
     /**
      * @param $repository
      *
@@ -49,13 +54,16 @@ class GitRepository
             $this->exception("Repository '$repository' not found.");
         }
 
-        $userLogin = App::i()->getAuth()->getUserLogin();
+        $user = App::i()->getAuth()->getUser();
+        $userLogin = $user->getLogin();
         if ($userLogin !== Auth::USER_ANONIM) {
             $this->setSshKeyPath(SSH_KEYS_DIR . "/{$userLogin}");
         }
+
+        $this->commitAuthorName = $user->getCommitAuthorName();
+        $this->commitAuthorEmail = $user->getCommitAuthorEmail();
     }
-    
-    
+
     /**
      * @return string
      */
@@ -666,10 +674,20 @@ class GitRepository
             $sshParams = ' GIT_SSH_COMMAND="ssh '.$sshParams.'" ';
         }
 
-        return trim($sshParams.' '.$programName.' ' . implode(' ', $cmd));
+        $gitAuthor = '';
+        if ($this->commitAuthorName && $this->commitAuthorEmail) {
+            $gitName = " export GIT_AUTHOR_NAME=\"$this->commitAuthorName\" ";
+            $gitEmail = " export GIT_AUTHOR_EMAIL=\"$this->commitAuthorEmail\" ";
+            $gitAuthor = "$gitName && $gitEmail && ";
+        }
+
+        $commandLine = trim($sshParams.' '.$programName.' ' . implode(' ', $cmd));
+
+        // wrap command with brackets to run it as subshell and avoid impact
+        // of exported variables on main shell
+        return "( {$gitAuthor} {$commandLine} )";
     }
-    
-    
+
     /**
      * Clones GIT repository from $url into $directory
      *
@@ -784,7 +802,7 @@ class GitRepository
     private function exception($msg, $output = [])
     {
         $this->end();
-        App::i()->getLogger()->error("Error: $msg", ['method' => __METHOD__]);
+        App::i()->getLogger()->error("Error: $msg", ['output' => $output]);
         $e = new GitException($msg);
         $e->setOutput($output);
         throw $e;
