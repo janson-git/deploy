@@ -21,15 +21,25 @@ class Checkpoint
      */
     protected $id;
 
-    public function __construct(Pack $pack, string $id)
+    // TODO: convert it to typed object
+    /** @var array */
+    protected $details;
+
+    public function __construct(Pack $pack, string $id, array $details = [])
     {
         $this->pack = $pack;
         $this->id = $id;
+        $this->details = $details;
     }
     
     public function getName(): string
     {
         return $this->id; 
+    }
+
+    public function getDetails(): array
+    {
+        return $this->details;
     }
     
     public function getPack(): Pack

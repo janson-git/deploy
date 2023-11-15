@@ -13,3 +13,4 @@ services:
             - .env
         volumes:
             - ./:/var/www
+            - ./.docker/deploy/50-custom.ini:/usr/local/etc/php/conf.d/50-custom.ini

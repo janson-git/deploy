@@ -246,25 +246,43 @@ class Pack
     public function loadCheckpoints(): void
     {
         $branchesByProject = [];
+        $branchesDetailed = [];
         
         foreach ($this->repos as $repo) {
             $branchesByProject[] = $repo->getBranches();
+            $branchesDetailed[] = $repo->getBranchesWithDetails();
         }
 
+        $commonLocalBranches = [];
+        $latestBranchDetails = [];
+
         if (count($branchesByProject) > 1) {
-            $commonLocalBranches = call_user_func_array('array_intersect', $branchesByProject);    
+            $commonLocalBranches = call_user_func_array('array_intersect', $branchesByProject);
+            // get only the latest info as details
+            foreach ($commonLocalBranches as $branchName) {
+                $latestDate = null;
+                foreach ($branchesDetailed as $data) {
+                    $details = $data[$branchName];
+
+                    $branchDate = new \DateTimeImmutable($details['date']);
+                    if ($latestDate !== null && $latestDate > $branchDate) {
+                        continue;
+                    }
+                    $latestDate = $branchDate;
+                    $latestBranchDetails[$branchName] = $details;
+                }
+            }
         } else if($branchesByProject) {
             $commonLocalBranches = array_filter((array)$branchesByProject[0]);
-        } else {
-            $commonLocalBranches = [];
+            $latestBranchDetails = $branchesDetailed[0];
         }
-        
+
         foreach ($commonLocalBranches as $branch) {
             if ($branch === 'master') {
                 continue;
             }
             
-            $cp = new Checkpoint($this, $branch);
+            $cp = new Checkpoint($this, $branch, $latestBranchDetails[$branch]);
             $cp->setCommands($this->getCheckpointCommands());
             
             $this->checkPoints[$branch] = $cp;

@@ -61,13 +61,14 @@ $view
                 @php( $className = ($lastCheckpointId === $cpId ? ' active ' : ''))
                 <div class="pure-u-1 pure-u-lg-1-2 pure-u-xl-1-3 card build-card {{ $className }}">
                     <div class="build-card-content">
+                        <div class="build-relative-date">{{ $checkPoint->getDetails()['relativeDate'] }}</div>
+
                         <div>{{ $cpId }}</div>
                         <div class="separator"></div>
 
                         @foreach ($checkPoint->getCommands() as $command)
                             @include('./components/commandButton.blade.php', [
                                 'command' => $command,
-                                'disabled' => $lastCheckpointId !== $cpId
                             ])
                             <br>
                         @endforeach

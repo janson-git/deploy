@@ -34,7 +34,7 @@ docker-compose up -d
    - create ssh keys with `ssh-keygen` command
    - upload `.pub` key part to your github account
    - put you private key part to your `deploy` app account on page  http://localhost:9088/user (click `Add SSH key` button)
-4. NOTE: now it now showed if SSH key already uploaded to app
+4. it shows on user profile page if SSH key already uploaded to app
 
 
 #### CREATE NEW PROJECT

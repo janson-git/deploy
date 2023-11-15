@@ -234,7 +234,34 @@ class GitRepository
             return trim(str_replace('*', '', $value));
         });
     }
-    
+
+    public function getBranchesWithDetails(): array
+    {
+        // get:
+        //   -l -> only local branches
+        //   --sort=-committerdate -> sorted by last commit date desc
+        //   --format=... -> with date, relative date and branchname
+        // Result:
+        // 2023-11-16 00:03:12 +0300 // 29 minutes ago // master
+        // 2023-11-12 23:02:55 +0300 // 3 days ago // refactor_and_clean
+        $cmd = 'git branch -l --sort=-committerdate --format="%(committerdate:iso8601) // %(committerdate:relative) // %(refname:short)" | grep -v HEAD';
+        $result = $this->extractFromCommand($cmd, function ($output) {
+            list($date, $relativeDate, $name) = explode('//', $output);
+
+            return [
+                'date' => trim($date),
+                'relativeDate' => trim($relativeDate),
+                'branch' => trim($name),
+            ];
+        });
+
+        $keyed = [];
+        foreach ($result as $info) {
+            $keyed[ $info['branch'] ] = $info;
+        }
+
+        return $keyed;
+    }
     
     /**
      * Returns list of all (local & remote) branches in repo.
