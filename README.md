@@ -19,12 +19,21 @@ make install
 make up
 ```
 
-2. Open http://localhost:9088/ in your browser. Register in your  `deploy` app
+or you can make this manually:
+```shell
+git clone git@github.com:janson-git/deploy.git
+cd deploy
+cp .env.example .env
+docker-compose build
+docker-compose up -d
+```
+
+2. Open http://localhost:9088/ in your browser. Register as new user in your  `deploy` app
 3. At this step lets create personal ssh key for your `deploy` account. That key will use in interactions with github.com from `deploy`.
    I recommend DO NOT USE your personal SSH key for that, but create new one for `deploy`.
-   a. create ssh keys with ssh-keygen command
-   b. upload .pub key part to your github account
-   c. put you private key part to your `deploy` app account on page  http://localhost:9088/user (click `Add SSH key` button)
+   - create ssh keys with `ssh-keygen` command
+   - upload `.pub` key part to your github account
+   - put you private key part to your `deploy` app account on page  http://localhost:9088/user (click `Add SSH key` button)
 4. NOTE: now it now showed if SSH key already uploaded to app
 
 
@@ -44,7 +53,7 @@ Ok, app prepared, and we need add our first project to work with it
 4. Open in browser http://localhost:9088/projects and click `Create new project`
 5. Find your cloned project directory in directory navigator. Navigate by click on folder names.
 6. When you found it (you will see branches list on that page), mark folder with checkbox and click on `Build Project`
-7. Right after that click 'Save Project`
+7. Right after that click `Save Project`
 
 
 #### CREATE PACK IN PROJECT
@@ -58,7 +67,11 @@ PACK - it is just kind of plan: branches list that you want to merge in release 
 BUILD - result of merging PACK branches to one branch. In fact `build` - it is release branch.
 
 
-`.gitconfig` file in project root directory contains username and email which will used as owner info for pushed release branches.
+You need additionally set your name and email which will showed as commit author on release branches created in `deploy`.
+
+Go to `Profile` page and press `Set commit author` button to fill this information. This information will display on `Git` log as commit author of release branch.
+
+If you skip this step then default value will use. It contains in `.gitconfig` file in project root directory contains username and email.
 
 Default content of .gitconfig is:
 ```shell
@@ -66,6 +79,9 @@ Default content of .gitconfig is:
 name = "Release Builder"
 email = "deploy@local"
 ```
+
+This commit author info used in your `deploy` app by users who didn't set personal commit author fields!
+
 
 1. Let's create first pack! Click on `Create new pack` button on your Project page
 2. Now you need to set release branch name, let's put `release-01` to pack name field

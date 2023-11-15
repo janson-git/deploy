@@ -68,5 +68,5 @@ return [
     'set_ssh_save_failed' => 'Failed to save SSH key',
     'ssh_key_page_description' => 'Generate SSH key pair, add pub-key into your git-storage (github, gitlab, etc..), private-key put here',
     'last_update_at' => 'Last update at',
-    'set_committer' => 'Set committer data',
+    'set_committer' => 'Set commits author',
 ];
