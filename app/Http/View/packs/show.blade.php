@@ -55,14 +55,20 @@ $view
         <h3>{{ __('builds') }}</h3>
         <div class="pure-g">
 
+            @php($lastCheckpointId = $pack->getLastCheckPoint()->getName())
+
             @foreach ($pack->getCheckPoints() as $cpId => $checkPoint)
-                <div class="pure-u-1 pure-u-lg-1-2 pure-u-xl-1-3 card build-card">
-                    <div>
+                @php( $className = ($lastCheckpointId === $cpId ? ' active ' : ''))
+                <div class="pure-u-1 pure-u-lg-1-2 pure-u-xl-1-3 card build-card {{ $className }}">
+                    <div class="build-card-content">
                         <div>{{ $cpId }}</div>
                         <div class="separator"></div>
 
                         @foreach ($checkPoint->getCommands() as $command)
-                            @include('./components/commandButton.blade.php', ['command' => $command])
+                            @include('./components/commandButton.blade.php', [
+                                'command' => $command,
+                                'disabled' => $lastCheckpointId !== $cpId
+                            ])
                             <br>
                         @endforeach
                     </div>

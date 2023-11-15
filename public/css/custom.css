@@ -290,8 +290,26 @@ h1 i,
     border-top: 5px solid #07e;
 }
 .build-card {
+    position: relative;
     border-top: 5px solid #99a;
     margin: 5px 10px;
+    background-color: lightgrey;
+}
+.build-card.active {
+    background-color: #fff;
+}
+.build-card.active .build-card-content:after {
+    content: 'LAST BUILD';
+    font-size: 11px;
+    line-height: 1;
+    position: absolute;
+    bottom: 7px;
+    right: 8px;
+    margin: 0;
+    border-radius: 4px;
+    padding: 4px;
+    border: 1px solid #1CB841;
+    color: #1CB841;
 }
 .project-card h1,
 .pack-card h1 {
