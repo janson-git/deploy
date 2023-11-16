@@ -7,6 +7,8 @@ This is a simple self-written tool to simplify merge and deploy in today's reali
 To get this awesome thing work you should have
 - the last "git" version installed. It used to work with repositories.
 
+[Terms used in this app](./docs/terms.md)
+
 ### Get Started
 
 #### INSTALL (you need docker and docker-compose)
