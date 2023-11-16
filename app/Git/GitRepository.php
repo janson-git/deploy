@@ -38,7 +38,7 @@ class GitRepository
      *
      * @throws GitException
      */
-    public function __construct($repository)
+    public function __construct(string $repository)
     {
         if (basename($repository) === '.git') {
             $repository = dirname($repository);

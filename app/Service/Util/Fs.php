@@ -1,39 +1,31 @@
 <?php
 
-
 namespace Service\Util;
-
 
 use Admin\App;
 
 class Fs
 {
-    protected $workDir;
-    
-    /**
-     * Fs constructor.
-     *
-     * @param $workDir
-     */
-    public function __construct($workDir = null)
+    private static ?self $instance = null;
+
+    protected string $workDir;
+
+    public function __construct(?string $workDir = null)
     {
         $this->workDir = $workDir ?: ROOT_DIR;
     }
     
-    /**
-     * @return Fs
-     */
-    public static function i()
+    public static function i(): self
     {
-        static $i;
-        !$i && $i = new self();
-        
-        return $i;
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
     }
     
-    public function ensureDir($dirName)
+    public function ensureDir(string $dirName): bool
     {
-        $absolutePath = $this->workDir . '/' . $dirName;
+        $absolutePath = $this->getAbsolutePath($dirName);
         
         if (!file_exists($absolutePath)) {
             mkdir($absolutePath, 0777, true);
@@ -43,14 +35,14 @@ class Fs
         return file_exists($absolutePath);
     }
     
-    public function hasFile ($fileName) 
+    public function hasFile(string $fileName): bool
     {
-        return file_exists($this->workDir.'/'.$fileName);
+        return file_exists($this->getAbsolutePath($fileName));
     }
     
-    public function writeFile ($fileName, $fileBody) 
+    public function writeFile(string $fileName, string $fileBody): bool
     {
-        return file_put_contents($this->workDir.'/'.$fileName, $fileBody);
+        return (bool) file_put_contents($this->getAbsolutePath($fileName), $fileBody);
     }
     
     public function exec($cmd, &$out, &$result, $from, $outLinesLimit = null)
@@ -84,8 +76,7 @@ class Fs
                         array_slice($out, -floor($halfSlice))
                     );
             }
-                
-            
+
             $lastLine = end($out);
             
             $msg = $cmd
@@ -132,26 +123,21 @@ class Fs
         ];
     }
     
-    public function rmLink($targetPath, $from)
+    public function rmLink($targetPath, $from): bool
     {
         $this->exec('rm ' . $targetPath, $out, $res, $from);
-        
         return !$res;
     }
-    
-    /**
-     * @return mixed
-     */
-    public function getWorkDir()
-    {
-        return $this->workDir;
-    }
-    
-    /**
-     * @param mixed $workDir
-     */
-    public function setWorkDir($workDir)
+
+    public function setWorkDir(string $workDir): self
     {
         $this->workDir = $workDir;
+        return $this;
+    }
+
+    private function getAbsolutePath(string $fileName): string
+    {
+        $fileName = trim($fileName, '/');
+        return $this->workDir . DIRECTORY_SEPARATOR . $fileName;
     }
 }

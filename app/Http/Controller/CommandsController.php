@@ -1,9 +1,8 @@
 <?php
 
-
 namespace App\Http\Controller;
 
-
+use Commands\CommandConfig;
 use Commands\CommandContext;
 use Commands\CommandRunner;
 use Service\Slot\SlotStack;
@@ -32,7 +31,7 @@ class CommandsController extends AbstractController
 //            $slots = $this->context->getPack()->getProject()->getSlotsPool()->loadProjectSlots()->getSlots();
 //            $this->context->setSlot((new SlotStack())->setStack($slots)); 
 //        }
-        
+
         $this->_buildTitle();
         
         $runner = new CommandRunner();
@@ -46,6 +45,7 @@ class CommandsController extends AbstractController
             'runner'  => $runner,
             'runtime' => $runner->getRuntime(),
             'packId'  => $this->context->getPack() ? $this->context->getPack()->getId() : '',
+            'isPackDeleted' => ($command === CommandConfig::PACK_CLEAR_DATA),
         ]);
     }
     

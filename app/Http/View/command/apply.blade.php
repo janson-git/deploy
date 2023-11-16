@@ -16,7 +16,7 @@
                 <i class="fa-solid fa-arrow-left"></i> {{ __('back_to_project') }}
             </a>
         @endif
-        @if ($context->getPack())
+        @if (!$isPackDeleted && $context->getPack())
             <a href="/packs/{{ $context->getPack()->getId() }}" class="pure-button btn-primary-outline btn-s">
                 <i class="fa-solid fa-arrow-left"></i> {{ __('back_to_pack') }}
             </a>
