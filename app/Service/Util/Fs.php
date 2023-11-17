@@ -45,7 +45,7 @@ class Fs
         return (bool) file_put_contents($this->getAbsolutePath($fileName), $fileBody);
     }
     
-    public function exec($cmd, &$out, &$result, $from, $outLinesLimit = null)
+    public function exec(string $cmd, &$out, &$result, $from, $outLinesLimit = null)
     {
         $out   = [];
         $start = microtime(1);

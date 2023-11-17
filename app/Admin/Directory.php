@@ -61,7 +61,7 @@ class Directory
         return $data;
     }
     
-    public function doScanDir($dir, $deep = 1, $prefix = ''): array
+    public function doScanDir(string $dir, int $deep = 1, $prefix = ''): array
     {
         $dir = rtrim($dir, '/');
         $prefix = $prefix ? $prefix . '/' : '';
@@ -115,14 +115,14 @@ class Directory
         return $result;
     }
     
-    public function getLastCommit($dir)
+    public function getLastCommit(string $dir)
     {
         exec('cd ' . $this->sitesDir . $dir . ' && git log -5 --pretty="%cn %B" ', $result);
         
         return array_filter($result);
     }
     
-    public function getRemotes($dir)
+    public function getRemotes(string $dir)
     {
         exec('cd ' . $this->sitesDir . $dir . ' && git remote -v ', $result);
         
@@ -133,7 +133,7 @@ class Directory
      * Suggests that full repo name contains owner name and repo name
      * Like: owner/repo.git, janson-git/deploy.git
      */
-    public function getFullRepoName($dir): string
+    public function getFullRepoName(string $dir): string
     {
         $remotes = $this->getRemotes($dir);
         $fullPath = array_shift($remotes);
@@ -155,7 +155,7 @@ class Directory
         return $repoFullName;
     }
 
-    public function getCurrentBranch($dir): string
+    public function getCurrentBranch(string $dir): string
     {
         $branches = $this->getBranch($dir);
         
@@ -168,7 +168,7 @@ class Directory
         return 'unknown';
     }
     
-    public function getUpdateTime($dir)
+    public function getUpdateTime(string $dir): array
     {
         $time = filemtime($this->sitesDir . $dir);
         
@@ -219,7 +219,7 @@ class Directory
         return implode("\n", $result);
     }
     
-    public function checkout($dir, $branch): string
+    public function checkout(string $dir, string $branch): string
     {
         if (!$this->checkDir($dir)) {
             return 'not a dir';

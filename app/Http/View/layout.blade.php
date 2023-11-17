@@ -32,7 +32,7 @@ $currentPath = \request()->getUri()->getPath();
     </a>
     <div id="menu">
         <div class="pure-menu pure-menu-open">
-            <a class="pure-menu-heading" href="/user">{{ $user->getLogin() }}</a>
+            <a class="pure-menu-heading" href="/user">{{ $user?->getLogin() }}</a>
             <ul>
                 @foreach ( $mainMenu as $menuItem)
                 <?php /** @var $menuItem \Service\Menu\MenuItem */ ?>

@@ -31,11 +31,9 @@ class Auth implements AuthInterface
     public function loadUser(): void
     {
         $auth = (new Data(App::DATA_SESSIONS))->readCached();
-
         if (isset($auth[$this->token])) {
             $this->user = User::getByLogin($auth[$this->token]);
         }
-
         if ($this->token === self::USER_ANONIM_TOKEN){
             $this->user = $this->getAnonim();
         }
@@ -48,7 +46,7 @@ class Auth implements AuthInterface
             ->setLogin(self::USER_ANONIM);
     }
 
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -78,7 +76,7 @@ class Auth implements AuthInterface
 
     public function isAuthenticated(): bool
     {
-        if ($this->getUserId() && $this->getUserId() !== self::USER_ANONIM_TOKEN) {
+        if ($this->user && $this->getUserId() !== self::USER_ANONIM_TOKEN) {
             return true;
         }
 

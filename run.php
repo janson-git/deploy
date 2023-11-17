@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware;
 use Exceptions\AuthException;
 use Psr\Container\ContainerInterface;
 
@@ -63,11 +64,8 @@ $app = new \Admin\App([
     'view' => function (ContainerInterface $container) {
         return new \Admin\View($container);
     },
-    'auth' => function () {
-        $auth = new \User\Auth();
-        $auth->loadUser();
-
-        return $auth;
+    'auth' => function (ContainerInterface $container) {
+        return new \User\Auth();
     },
 ]);
 
@@ -89,10 +87,9 @@ try {
         ]));
     }
 
-    // COMMON APP MIDDLEWARE TO PREPARE CALLABLE AND ROUTE WITH PARAMS
-    // TODO: when all NEW controllers will rid of 'before' and 'after' methods
-    // TODO:   possible this common middleware will become be unneeded
-    $app->add(\App\Http\Middleware\HandleControllerFlowWithBeforeAndAfter::class);
+    // COMMON APP MIDDLEWARES
+    $app->add(Middleware\Auth::class);
+    $app->add(Middleware\HandleRouteCallable::class);
 
     $app->loadRoutes();
 

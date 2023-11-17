@@ -8,30 +8,23 @@ use User\Auth;
 
 class GitRepository
 {
-    /** @var string */
-    private $repository;
-    
-    private $path;
+    private string $repository;
+    private string $path;
+
+    private Fs $fs;
 
     /** @var string|NULL @internal */
     private $cwd;
-    
-    
-    private $remoteBranches = [];
-    
-    private $lastOutput = '';
-    
-    /**  @var Fs */
-    private $fs;
-    
-    private $sshKeyPath = '';
 
-    private $ignoreKnownHosts = true;
+    private array $remoteBranches = [];
 
-    /** @var string|null */
-    private $commitAuthorName = null;
-    /** @var string|null */
-    private $commitAuthorEmail = null;
+    private string $lastOutput = '';
+    private ?string $sshKeyPath = '';
+
+    private bool $ignoreKnownHosts = true;
+
+    private ?string $commitAuthorName = null;
+    private ?string $commitAuthorEmail = null;
 
     /**
      * @param $repository
@@ -43,16 +36,17 @@ class GitRepository
         if (basename($repository) === '.git') {
             $repository = dirname($repository);
         }
-        
+
+        $realpath = realpath($repository);
+        if ($realpath === false) {
+            $this->exception("Repository '$repository' not found.");
+        }
+
         $this->path       = $repository;
-        $this->repository = realpath($repository);
+        $this->repository = $realpath;
         
         $this->fs = new Fs();
         $this->fs->setWorkDir($this->repository);
-        
-        if ($this->repository === false) {
-            $this->exception("Repository '$repository' not found.");
-        }
 
         $user = App::i()->getAuth()->getUser();
         $userLogin = $user->getLogin();
@@ -64,59 +58,41 @@ class GitRepository
         $this->commitAuthorEmail = $user->getCommitAuthorEmail();
     }
 
-    /**
-     * @return string
-     */
-    public function getRepositoryPath()
+    public function getRepositoryPath(): string
     {
         return $this->repository;
     }
-    
     
     /**
      * Creates a tag.
      * `git tag <name>`
      *
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function createTag($name)
+    public function createTag(string $name): self
     {
         return $this->begin()->run('git tag', $name)->end();
     }
-    
     
     /**
      * Removes tag.
      * `git tag -d <name>`
      *
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function removeTag($name)
+    public function removeTag(string $name): self
     {
-        return $this->begin()->run('git tag', array(
-            '-d' => $name,
-        ))->end();
+        return $this->begin()->run('git tag', ['-d' => $name])->end();
     }
-    
     
     /**
      * Renames tag.
      * `git tag <new> <old>`
      * `git tag -d <old>`
      *
-     * @param  string
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function renameTag($oldName, $newName)
+    public function renameTag(string $oldName, string $newName): self
     {
         return $this->begin()// http://stackoverflow.com/a/1873932
         // create new as alias to old (`git tag NEW OLD`)
@@ -125,45 +101,36 @@ class GitRepository
         ->end();
     }
     
-    
     /**
      * Returns list of tags in repo.
+     *
      * @return string[]|NULL  NULL => no tags
+     * @throws GitException
      */
-    public function getTags()
+    public function getTags(): ?array
     {
         return $this->extractFromCommand('git tag', 'trim');
     }
-    
     
     /**
      * Merges branches.
      * `git merge <options> <name>`
      *
-     * @param  string
-     * @param  array|NULL
-     *
      * @throws GitException
-     * @return self
      */
-    public function merge($branch, $options = null)
+    public function merge(string $branch, ?array $options = null): self
     {
         return $this->begin()->run('git merge ', $options, $branch)->end();
     }
-    
     
     /**
      * Creates new branch.
      * `git branch <name>`
      * (optionaly) `git checkout <name>`
      *
-     * @param  string
-     * @param  bool
-     *
      * @throws GitException
-     * @return self
      */
-    public function createBranch($name, $checkout = false)
+    public function createBranch(string $name, bool $checkout = false): self
     {
         $this->begin();
         
@@ -177,31 +144,26 @@ class GitRepository
         return $this->end();
     }
     
-    
     /**
      * Removes branch.
      * `git branch -d <name>`
      *
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function removeBranch($name)
+    public function removeBranch(string $name): self
     {
         return $this->begin()->run('git branch', array(
             '-D' => $name,
         ))->end();
     }
     
-    
     /**
      * Gets name of current branch
      * `git branch` + magic
-     * @return string
+     *
      * @throws GitException
      */
-    public function getCurrentBranchName()
+    public function getCurrentBranchName(): string
     {
         try {
             $branch = $this->extractFromCommand('git branch -a', function ($value) {
@@ -220,12 +182,13 @@ class GitRepository
         $this->exception('Getting current branch name failed.');
     }
     
-    
     /**
-     * Returns list of all (local & remote) branches in repo.
+     * Returns list of local branches in repo.
+     *
      * @return string[]|NULL  NULL => no branches
+     * @throws GitException
      */
-    public function getBranches()
+    public function getBranches(): ?array
     {
         return $this->extractFromCommand('git branch ', function ($value) {
             if (strrpos($value, 'HEAD detached') !== false ) {
@@ -235,6 +198,11 @@ class GitRepository
         });
     }
 
+    /**
+     * Returns sorted list of local branches in repo with date, relative date and name.
+     * @return array
+     * @throws GitException
+     */
     public function getBranchesWithDetails(): array
     {
         // get:
@@ -264,10 +232,11 @@ class GitRepository
     }
     
     /**
-     * Returns list of all (local & remote) branches in repo.
+     * Returns list of remote branches in repo.
      * @return string[]|NULL  NULL => no branches
+     * @throws GitException
      */
-    public function getRemoteBranches()
+    public function getRemoteBranches(): ?array
     {
         if (!$this->remoteBranches) {
             $this->remoteBranches = $this->extractFromCommand('git branch -r', function ($value) {
@@ -277,8 +246,12 @@ class GitRepository
         
         return $this->remoteBranches;
     }
-    
-    public function mergeRemoteIfHas($branch)
+
+    /**
+     * @return false|string
+     * @throws GitException
+     */
+    public function mergeRemoteIfHas(string $branch)
     {
         $this->getRemoteBranches();
         
@@ -307,51 +280,55 @@ class GitRepository
         return $result;
     }
     
-    
     /**
      * Returns list of local branches in repo.
      * @return string[]|NULL  NULL => no branches
+     * @throws GitException
      */
-    public function getLocalBranches()
+    public function getLocalBranches(): ?array
     {
         return $this->extractFromCommand('git branch', function ($value) {
             return trim(substr($value, 1));
         });
     }
     
-    
     /**
      * Checkout branch.
      * `git checkout <branch>`
      *
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function checkout($name)
+    public function checkout(string $name): self
     {
         return $this->begin()->run('git checkout', $name)->end();
     }
-    
-    public function checkoutToNewBranch($name, $toBranch)
+
+    /**
+     * @throws GitException
+     */
+    public function checkoutToNewBranch(string $name, string $toBranch): self
     {
         return $this->begin()->run('git checkout ', $name, ['-b' => $toBranch])->end();
     }
-    
-    public function checkoutNewBranchFromDetached($name)
+
+    /**
+     * @throws GitException
+     */
+    public function checkoutNewBranchFromDetached(string $name): self
     {
         return $this->begin()->run('git checkout -b ', $name)->end();
     }
 
-    public function checkoutBranchOrResetAndCheckout($name)
+    /**
+     * @throws GitException
+     */
+    public function checkoutBranchOrResetAndCheckout(string $name): self
     {
         return $this->begin()->run('git checkout -B ', $name)->end();
     }
 
     /**
-     * @param string $prefix
-     * @return string|null
+     * @throws GitException
      */
     public function getLastTag(string $prefix = '') : ?string
     {
@@ -370,60 +347,45 @@ class GitRepository
      * Checkout branch.
      * `git checkout <branch>`
      *
-     * @param  string
-     *
      * @throws GitException
-     * @return self
      */
-    public function fullReset()
+    public function fullReset(): self
     {
         return $this->begin()->run('git reset --hard HEAD')->run('git clean -df')->end();
     }
-    
     
     /**
      * Removes file(s).
      * `git rm <file>`
      *
-     * @param  string|string[]
+     * @param  string[] $files
      *
      * @throws GitException
-     * @return self
      */
-    public function removeFile($file)
+    public function removeFiles(array $files): self
     {
-        if (!is_array($file)) {
-            $file = func_get_args();
-        }
-        
         $this->begin();
         
-        foreach ($file as $item) {
+        foreach ($files as $item) {
             $this->run('git rm', $item, '-r');
         }
         
         return $this->end();
     }
-    
-    
+
     /**
      * Adds file(s).
      * `git add <file>`
      *
-     * @param  string|string[]
+     * @param string[] $files
      *
      * @throws GitException
-     * @return self
      */
-    public function addFile($file)
+    public function addFiles(array $files): self
     {
-        if (!is_array($file)) {
-            $file = func_get_args();
-        }
-        
         $this->begin();
         
-        foreach ($file as $item) {
+        foreach ($files as $item) {
             // TODO: ?? is file($repo . / . $item) ??
             $this->run('git add', $item);
         }
@@ -431,64 +393,46 @@ class GitRepository
         return $this->end();
     }
     
-    
     /**
      * Renames file(s).
      * `git mv <file>`
      *
-     * @param  string|string[] from : array('from' => 'to', ...) || (from, to)
-     * @param  string|NULL
-     *
      * @throws GitException
-     * @return self
      */
-    public function renameFile($file, $to = null)
+    public function renameFile(string $file, string $to): self
     {
-        if (!is_array($file)) // rename(file, to);
-        {
-            $file = array(
-                $file => $to,
-            );
-        }
-        
-        $this->begin();
-        
-        foreach ($file as $from => $to) {
-            $this->run('git mv', $from, $to);
-        }
-        
-        return $this->end();
+        return $this->begin()->run('git mv', $file, $to)->end();
     }
-    
     
     /**
      * Commits changes
      * `git commit <params> -m <message>`
      *
-     * @param           string
-     * @param  string[] param => value
+     * @param string $message
+     * @param  string[]|null $params As array of param => value pairs
      *
      * @throws GitException
      * @return self
      */
-    public function commit($message, $params = null)
+    public function commit(string $message, ?array $params = null): self
     {
         if (!is_array($params)) {
-            $params = array();
+            $params = [];
         }
         
-        return $this->begin()->run("git commit", $params, array(
+        return $this->begin()->run("git commit", $params, [
             '-m' => $message,
-        ))->end();
+        ])->end();
     }
-    
-    
+
     /**
      * Exists changes?
      * `git status` + magic
+     *
      * @return bool
+     * @throw \Exception
      */
-    public function hasChanges()
+    public function hasChanges(): bool
     {
         $this->begin();
         $this->fs->exec('git status', $out, $res, __METHOD__);
@@ -500,21 +444,8 @@ class GitRepository
         $a3  = strrpos($out, 'All conflicts fixed but you are still merging') !== false;
         return ($a1 && $a2) || $a3; // FALSE => changes
     }
-    
-    
-    /**
-     * @deprecated
-     */
-    public function isChanges()
-    {
-        return $this->hasChanges();
-    }
-    
-    
-    /**
-     * @return self
-     */
-    protected function begin()
+
+    protected function begin(): self
     {
         if ($this->cwd === null) // TODO: good idea??
         {
@@ -525,11 +456,7 @@ class GitRepository
         return $this;
     }
     
-    
-    /**
-     * @return self
-     */
-    protected function end()
+    protected function end(): self
     {
         if (is_string($this->cwd)) {
 //            chdir($this->cwd);
@@ -539,42 +466,35 @@ class GitRepository
         
         return $this;
     }
-    
-    public function fetch()
+
+    /**
+     * @throws GitException
+     */
+    public function fetch(): self
     {
         return $this->begin()->run('git fetch -p')->end();
     }
-    
-    
+
     /**
      * Pull changes from a remote
      *
-     * @param  string|NULL
-     * @param  array|NULL
-     *
-     * @return self
      * @throws GitException
      */
-    public function pull($remote = null, array $params = null)
+    public function pull(?string $remote = null, ?array $params = null): self
     {
         if (!is_array($params)) {
-            $params = array();
+            $params = [];
         }
         
         return $this->begin()->run("git pull $remote", $params)->end();
     }
-    
-    
+
     /**
      * Push changes to a remote
      *
-     * @param  string|NULL
-     * @param  array|NULL
-     *
-     * @return self
      * @throws GitException
      */
-    public function push($remote = null, array $params = null)
+    public function push(?string $remote = null, ?array $params = null): self
     {
         if (!is_array($params)) {
             $params = array();
@@ -587,27 +507,23 @@ class GitRepository
      * Clone remote repository to local dir.
      * `git clone <repo_path> <dir>`
      *
-     * @param  string $remoteRepo
-     * @param  string $dir
-     *
      * @throws GitException
-     * @return self
      */
-    public function cloneRemoteRepository($remoteRepo, $dir): self
+    public function cloneRemoteRepository(string $remoteRepo, string $dir): self
     {
         return $this->begin()->run("git clone {$remoteRepo} \"$dir\"")->end();
     }
     
     /**
-     * @param  $cmd
-     * @param  string
+     * @param string $cmd
+     * @param string|Closure|callable $filterCallback
      *
      * @return NULL|\string[]
      * @throws GitException
      */
-    protected function extractFromCommand($cmd, $filterCallback = null)
+    protected function extractFromCommand(string $cmd, $filterCallback = null)
     {
-        $output   = array();
+        $output = [];
         $exitCode = null;
         
         $this->begin();
@@ -619,11 +535,10 @@ class GitRepository
         }
         
         if ($filterCallback && is_callable($filterCallback)) {
-            $newArray = array();
+            $newArray = [];
             
             foreach ($output as $line) {
                 $value = $filterCallback($line);
-                
                 if ($value === false) {
                     continue;
                 }
@@ -634,26 +549,20 @@ class GitRepository
             $output = $newArray;
         }
         
-        if (!isset($output[0])) // empty array
-        {
+        if (!isset($output[0])) { // empty array
             return null;
         }
         
         return $output;
     }
     
-    
     /** Runs command.
      *
-     * @param  string|array
-     *
-     * @return self
      * @throws GitException
      */
-    protected function run($cmd/*, $options = NULL*/)
+    protected function run(string $cmd, ...$args): self
     {
-        $args = func_get_args();
-        $cmd  = $this->processCommand($args);
+        $cmd  = $this->processCommand($cmd, $args);
         $this->fs->exec($cmd, $output, $ret, __METHOD__);
         $this->lastOutput = is_string($output) ? $output : implode("\n", $output);
         
@@ -664,12 +573,9 @@ class GitRepository
         return $this;
     }
     
-    
-    protected function processCommand(array $args)
+    protected function processCommand(string $programName, array $args): string
     {
-        $cmd = array();
-
-        $programName = array_shift($args);
+        $cmd = [];
 
         foreach ($args as $arg) {
             if (is_array($arg)) {
@@ -718,13 +624,9 @@ class GitRepository
     /**
      * Clones GIT repository from $url into $directory
      *
-     * @param  $localPath
-     * @param  string
-     *
-     * @return bool
      * @throws GitException
      */
-    public function cloneLocalRepository($localPath, $targetPath, $saveOriginalRemote = true)
+    public function cloneLocalRepository(string $localPath, ?string $targetPath, bool $saveOriginalRemote = true): bool
     {
         if ($targetPath !== null && is_dir("$targetPath/.git")) {
 //            $this->exception("Repo already exists in $targetPath.");
@@ -765,7 +667,7 @@ class GitRepository
         return true;
     }
 
-    public function update($branch)
+    public function update(string $branch): string
     {
         $output = [];
         $output[] = $this->begin()->run('git fetch -p 2>&1')->getLastOutput();
@@ -803,30 +705,26 @@ class GitRepository
      * Is path absolute?
      * Method from Nette\Utils\FileSystem
      * @link   https://github.com/nette/nette/blob/master/Nette/Utils/FileSystem.php
-     * @return bool
      */
-    public static function isAbsolute($path)
+    public static function isAbsolute(string $path): bool
     {
         return (bool)preg_match('#[/\\\\]|[a-zA-Z]:[/\\\\]|[a-z][a-z0-9+.-]*://#Ai', $path);
     }
     
-    /**
-     * @return mixed
-     */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
     
-    /**
-     * @param mixed $path
-     */
-    public function setPath($path)
+    public function setPath(string $path): void
     {
         $this->path = $path;
     }
-    
-    private function exception($msg, $output = [])
+
+    /**
+     * @throws GitException
+     */
+    private function exception(string $msg, array $output = [])
     {
         $this->end();
         App::i()->getLogger()->error("Error: $msg", ['output' => $output]);
@@ -835,15 +733,15 @@ class GitRepository
         throw $e;
     }
     
-    /**
-     * @return string
-     */
-    public function getLastOutput()
+    public function getLastOutput(): string
     {
         return $this->lastOutput;
     }
-    
-    public function diff()
+
+    /**
+     * @throws GitException
+     */
+    public function diff(): string
     {
         $this->run('git diff');
         return $this->lastOutput;
@@ -855,18 +753,12 @@ class GitRepository
         return preg_split('/\s+/', $this->lastOutput);
     }
     
-    /**
-     * @return string
-     */
-    public function getSshKeyPath()
+    public function getSshKeyPath(): string
     {
         return $this->sshKeyPath;
     }
     
-    /**
-     * @param string $sshKeyPath
-     */
-    public function setSshKeyPath($sshKeyPath)
+    public function setSshKeyPath(?string $sshKeyPath): void
     {
         $this->sshKeyPath = $sshKeyPath;
     }
