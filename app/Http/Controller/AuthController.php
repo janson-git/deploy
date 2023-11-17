@@ -4,6 +4,8 @@ namespace App\Http\Controller;
 
 use Admin\App;
 use Service\Data;
+use Service\User;
+use Slim\Http\Response;
 
 class AuthController extends AbstractController
 {
@@ -17,50 +19,41 @@ class AuthController extends AbstractController
      */
     protected $sessionsData;
     
-    public function login()
+    public function login(): Response
     {
-        $this->userData = new Data(App::DATA_USERS);
-        $this->sessionsData = new Data('sessions');
-
         $this->setTitle(__('login'));
 
         if ($this->request->isPost()) {
-            $status = false;
-            $user = [];
 
-            $key = $this->p('login');
-            $userPassword = md5($this->p('password'));
+            $login = $this->p('login');
+            $pass = $this->p('password');
 
-            $users = $this->userData->readCached();
+            $this->userData = new Data(App::DATA_USERS);
+            $this->sessionsData = new Data('sessions');
 
-            if (isset($users[$key]) && $users[$key][\User\Auth::USER_PASS] == $userPassword) {
-                $status = true;
-                $user[$key] = $users[$key];
-            }
-
-            $response = $this->app->getResponse();
-
-            if ($status === true && !empty($user)) {
-                $token = $this->createToken($key);
-                $sessions = $this->sessionsData->setData([$token => $key] + $this->sessionsData->read());
+            $user = User::getByLoginAndPass($login, $pass);
+            if ($user !== null) {
+                $token = $this->createToken($login);
+                $sessions = $this->sessionsData->setData([$token => $login] + $this->sessionsData->read());
                 $sessions->write();
 
-                $response = $this->app->getCookiesPipe()->addCookie($response, 'tkn', $token);
-                $this->app->stopAndRedirectWithResponse('/projects', $response);
+                return $this->app->getCookiesPipe()
+                    ->addCookie($this->response, 'tkn', $token)
+                    ->withRedirect('/projects');
             } else {
-                $this->app->stopAndRedirectTo('/auth/login');
+                return $this->response->withRedirect('/auth/login');
             }
         }
 
         return $this->view->render('auth/loginForm.blade.php');
     }
 
-    public function logout()
+    public function logout(): Response
     {
         $this->userData = new Data(App::DATA_USERS);
         $this->sessionsData = new Data('sessions');
 
-        $token = $this->app->getRequest()->getCookieParam('tkn');
+        $token = $this->request->getCookieParam('tkn');
 
         $session = $this->sessionsData->read();
         if (isset($session[$token])) {
@@ -69,57 +62,46 @@ class AuthController extends AbstractController
         $sessions = $this->sessionsData->setData($session);
         $sessions->write();
 
-        // delete token cookie
-        $response = $this->app->getCookiesPipe()
-            ->deleteCookie($this->app->getResponse(), 'tkn');
-
-        $this->app->stopAndRedirectWithResponse('/auth/login', $response);
+        // delete token cookie and go to login page
+        return $this->app->getCookiesPipe()
+            ->deleteCookie($this->response, 'tkn')
+            ->withRedirect('/auth/login');
     }
 
-    public function register()
+    public function register(): Response
     {
         $this->userData = new Data(App::DATA_USERS);
         $this->sessionsData = new Data('sessions');
 
         $this->setTitle(__('registration'));
 
-        if ($this->app->getRequest()->isPost()){
-            // обработка данных юзера, валидация, добавление  в scope users
-            $status = false;
-
-            $key = $this->p('login');
-            $userName = ($this->p('name')) ? $this->p('name') : '';
+        if ($this->request->isPost()) {
+            $login = $this->p('login');
+            $userName = $this->p('name', '');
             $userPassword1 = md5($this->p('password1'));
             $userPassword2 = md5($this->p('password2'));
 
-            //Проверка существования пользователя
-            $users = $this->userData->readCached();
-
-            if (isset($users[$key])) {
-                $status  = true;
-            }
-
-            $id = $this->createToken($key);
+            $user = User::getByLogin($login);
 
             //Создание пользователя
-            if($status === false && $userPassword1 === $userPassword2) {
-                $user[$key][\User\Auth::USER_NAME] = $userName;
-                $user[$key][\User\Auth::USER_PASS] = $userPassword1;
-                $user[$key][\User\Auth::USER_ID] = $id;
-                $user[$key][\User\Auth::USER_LOGIN] = $key;
-                $userNew = $this->userData->setData($user + $this->userData->read());
-                $userNew->write();
+            if ($user === null && $userPassword1 === $userPassword2) {
+                $user = new User();
+                $user->setName($userName);
+                $user->setLogin($login);
+                $user->setPassword($userPassword1);
+                $user->setId($this->createToken($login));
+
+                $user->save();
             }
 
-            $response = $this->app->getResponse();
-
-            //загрузка юзера и установка куков
-            $token = $this->createToken($key);
-            $sessions = $this->sessionsData->setData([$token => $key] + $this->sessionsData->read());
+            // login new user and update session
+            $sessionToken = $this->createToken($login);
+            $sessions = $this->sessionsData->setData([$sessionToken => $login] + $this->sessionsData->read());
             $sessions->write();
 
-            $response = $this->app->getCookiesPipe()->addCookie($response, 'tkn', $token);
-            return $response->withRedirect('/projects');
+            return $this->app->getCookiesPipe()
+                ->addCookie($this->response, 'tkn', $sessionToken)
+                ->withRedirect('/projects');
         }
 
         return $this->view->render('auth/registerForm.blade.php');

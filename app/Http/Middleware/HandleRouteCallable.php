@@ -9,7 +9,7 @@ use Slim\Container;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-class HandleControllerFlowWithBeforeAndAfter
+class HandleRouteCallable
 {
     private Container $container;
 

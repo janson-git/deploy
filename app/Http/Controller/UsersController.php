@@ -2,9 +2,11 @@
 
 namespace App\Http\Controller;
 
+use Slim\Http\Response;
+
 class UsersController extends AbstractController
 {
-    public function index()
+    public function index(): Response
     {
         $this->setTitle($this->app->getAuth()->getUserName());
         $this->setSubTitle('@' . $this->app->getAuth()->getUserLogin());
@@ -14,7 +16,7 @@ class UsersController extends AbstractController
         ]);
     }
     
-    public function addkey()
+    public function addkey(): Response
     {
         $this->setTitle(__('set_ssh_key'));
         
@@ -38,7 +40,7 @@ class UsersController extends AbstractController
         ]);
     }
 
-    public function committerInfo()
+    public function committerInfo(): Response
     {
         $this->setTitle(__('set_committer'));
 

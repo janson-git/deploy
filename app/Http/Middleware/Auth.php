@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
-use Service\Auth\AuthInterface;
+use Admin\App;
+use Service\Data;
+use Service\User;
 use Slim\Container;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-class OnlyAuthenticated
+class Auth
 {
     private Container $container;
 
@@ -27,14 +31,22 @@ class OnlyAuthenticated
         Response $response,
         $next
     ) {
-        if (!$this->getAuth()->isAuthenticated()) {
-            return $response->withRedirect('/auth/login');
+        // check sessions and users by session
+        $sessionToken = $request->getCookieParam('tkn');
+
+        $sessions = (new Data(App::DATA_SESSIONS))->readCached();
+
+        if (array_key_exists($sessionToken, $sessions)) {
+            $user = User::getByLogin($sessions[$sessionToken]);
+            if ($user !== null) {
+                $this->getAuth()->setUser($user);
+            }
         }
 
         return $next($request, $response);
     }
 
-    private function getAuth(): AuthInterface
+    private function getAuth(): \User\Auth
     {
         return $this->container->get('auth');
     }
