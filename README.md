@@ -1,7 +1,11 @@
-# Deploy by Vetermanve (powered by Janson)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/janson-git/deploy)
+![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/janson-git/deploy)
+![GitHub repo size](https://img.shields.io/github/repo-size/janson-git/deploy)
+
+# Release Branch Manage Tool
 
 ### About
-This is a simple self-written tool to simplify merge and deploy in today's reality.
+This is a tool to make release branches management simple and convenient.
 
 ### Requires
 To get this awesome thing work you should have
