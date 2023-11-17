@@ -115,8 +115,12 @@ $view->addBreadcrumb(
             $.getJSON('/git/update/', {dir}, function (res) {
                 _this.log(res.data, el);
                 spinnerOff(btn);
-            }).error(function (r, data, errorThrown) {
-                $('#doneLog').html(r.responseText);
+            }).error(function (res, data, errorThrown) {
+                const json = res.responseJSON;
+                $('#doneLog').html(
+                    `<div class="text-error">${json.code} ${json.reason}</div>` +
+                    '<span class="text-error">' + json.message + '</span>'
+                );
                 spinnerOff(btn)
             });
         },

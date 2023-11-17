@@ -3,6 +3,7 @@
 namespace Service;
 
 use Admin\App;
+use Exceptions\NotFoundException;
 
 class Project
 {
@@ -27,22 +28,18 @@ class Project
 
     public static function getById(int $id): self
     {
-        $project = new self($id);
+        $project = new self();
         $project->setId($id);
 
-        return $project->init();
+        return $project->loadBy($id);
     }
 
-    public function init(): self
+    private function loadBy(int $id): self
     {
-        if ($this->id === null) {
-            throw new \Exception('Project ID not defined!');
-        }
-
         /* load project data */
         $projectsData = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
-        if (!isset($projectsData[$this->id])) {
-            throw new \Exception('Project #' . $this->id . ' not found');
+        if (!isset($projectsData[$id])) {
+            throw new NotFoundException('Project #' . $this->id . ' not found');
         }
         
         /* get project data */

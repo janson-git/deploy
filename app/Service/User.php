@@ -61,7 +61,7 @@ class User
         $this->login = $login;
         $this->id = $userData['id'];
         $this->name = $userData['name'];
-        $this->password = $userData['password'];
+        $this->password = $userData['pass'];
         $this->email = $userData['email'] ?? '';
         $this->commitAuthorName = $userData['committerName'] ?? '';
         $this->commitAuthorEmail = $userData['committerEmail'] ?? '';
@@ -153,7 +153,7 @@ class User
         if (array_key_exists($this->login, $data)) {
             // UPDATE USER
             $userData = $data[$this->login];
-            $userData['password'] = $this->password;
+            $userData['pass'] = $this->password;
             $userData['committerName'] = $this->commitAuthorName;
             $userData['committerEmail'] = $this->commitAuthorEmail;
 

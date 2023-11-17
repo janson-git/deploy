@@ -27,6 +27,9 @@
 <body>
     <div class="header">
         <h2>{{ $code }} {{ $reason }}</h2>
+        <p>
+            <b>{{ get_class($exception) }}</b> throwed
+        </p>
     </div>
     <div class="content">
         <h3>{{ $exception->getMessage() }}</h3>

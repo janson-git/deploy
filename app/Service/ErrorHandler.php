@@ -18,7 +18,21 @@ class ErrorHandler
         $this->container = $container;
     }
 
-    public function __invoke(Request $request, Response $response, \Throwable $exception) {
+    public function __invoke(Request $request, Response $response, \Throwable $exception)
+    {
+        if ($request->isXhr()) {
+            return $response
+                ->withStatus(500)
+                ->withJson([
+                    'code' => 500,
+                    'reason' => 'Internal Server Error',
+                    'message' => $exception->getMessage(),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                    'trace' => $exception->getTrace(),
+                ]);
+        }
+
         /** @var BladeOne $renderer */
         $renderer = $this->container->get('blade');
 
