@@ -60,7 +60,7 @@ class TelegramBot extends EventProto
     public function config () 
     {
         if (!$this->_botConfig) {
-            $this->_botConfig = new Data('telegram_bot');
+            $this->_botConfig = Data::scope('telegram_bot');
         }
         
         return $this->_botConfig;

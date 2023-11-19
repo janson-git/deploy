@@ -2,6 +2,7 @@
 
 namespace Interaction\Web\Controller;
 
+use Admin\App;
 use Interaction\Base\Controller\ControllerProto;
 use \Service\Data;
 
@@ -9,7 +10,7 @@ class AuthControllerProto extends ControllerProto
 {
     public function before()
     {
-        $data = (new Data('user'))->readCached();
+        $data = Data::scope(App::DATA_USERS)->getAll();
 
         /** @var \User\Auth $auth */
         $auth = $this->app->getAuth();

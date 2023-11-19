@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_URI'] === '/ping') {
     exit(0);
 }
 
-const PRODUCTION = true;
+const DEBUG_MODE = true;
 const ROOT_DIR = __DIR__;
 const SSH_KEYS_DIR = __DIR__ . '/ssh_keys';
 const STORAGE_DIR = __DIR__ . '/storage';

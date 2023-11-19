@@ -16,21 +16,21 @@ class ServiceConfig extends ApiProto
             
             $fieldsIdx = array_flip($fields);
             
-            $globalData   = new Data('service_global');
-            $globalConfig = $globalData->setReadFrom(__METHOD__)->read();
+            $globalData   = Data::scope('service_global');
+            $globalConfig = $globalData->read();
             
             $serviceConfigName = 'service_' . $service;
-            $serviceData       = new Data($serviceConfigName);
-            $serviceConfig     = $serviceData->setReadFrom(__METHOD__)->read();
+            $serviceData       = Data::scope($serviceConfigName);
+            $serviceConfig     = $serviceData->read();
             
             $config = $all 
                 ? $serviceConfig + $globalConfig
                 : array_intersect_key($serviceConfig + $globalConfig, $fieldsIdx);
         
             if ($fieldsIdx) {
-                $requestLog = new Data($serviceConfigName.'_requests');
-                $requestLog->setData($fieldsIdx);
-                $requestLog->write(false);
+                $requestLog = Data::scope($serviceConfigName.'_requests')
+                    ->setData($fieldsIdx)
+                    ->write(false);
             }
             
             $this->response([

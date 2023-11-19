@@ -2,7 +2,7 @@
 ![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/janson-git/deploy)
 ![GitHub repo size](https://img.shields.io/github/repo-size/janson-git/deploy)
 
-# Release Branch Manage Tool
+# Release Branches Manage Tool
 
 ### About
 This is a tool to make release branches management simple and convenient.

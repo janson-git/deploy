@@ -34,7 +34,7 @@ class Auth
         // check sessions and users by session
         $sessionToken = $request->getCookieParam('tkn');
 
-        $sessions = (new Data(App::DATA_SESSIONS))->readCached();
+        $sessions = Data::scope(App::DATA_SESSIONS)->getAll();
 
         if (array_key_exists($sessionToken, $sessions)) {
             $user = User::getByLogin($sessions[$sessionToken]);

@@ -9,16 +9,6 @@ use Slim\Http\Response;
 
 class AuthController extends AbstractController
 {
-    /**
-     * @var Data
-     */
-    protected $userData;
-
-    /**
-     * @var Data
-     */
-    protected $sessionsData;
-    
     public function login(): Response
     {
         $this->setTitle(__('login'));
@@ -28,14 +18,13 @@ class AuthController extends AbstractController
             $login = $this->p('login');
             $pass = $this->p('password');
 
-            $this->userData = new Data(App::DATA_USERS);
-            $this->sessionsData = new Data('sessions');
-
             $user = User::getByLoginAndPass($login, $pass);
             if ($user !== null) {
                 $token = $this->createToken($login);
-                $sessions = $this->sessionsData->setData([$token => $login] + $this->sessionsData->read());
-                $sessions->write();
+
+                Data::scope(App::DATA_SESSIONS)
+                    ->insertOrUpdate($token, $login)
+                    ->write();
 
                 return $this->app->getCookiesPipe()
                     ->addCookie($this->response, 'tkn', $token)
@@ -50,17 +39,11 @@ class AuthController extends AbstractController
 
     public function logout(): Response
     {
-        $this->userData = new Data(App::DATA_USERS);
-        $this->sessionsData = new Data('sessions');
-
         $token = $this->request->getCookieParam('tkn');
 
-        $session = $this->sessionsData->read();
-        if (isset($session[$token])) {
-            unset($session[$token]);
-        }
-        $sessions = $this->sessionsData->setData($session);
-        $sessions->write();
+        Data::scope(App::DATA_SESSIONS)
+            ->delete($token)
+            ->write();
 
         // delete token cookie and go to login page
         return $this->app->getCookiesPipe()
@@ -70,9 +53,6 @@ class AuthController extends AbstractController
 
     public function register(): Response
     {
-        $this->userData = new Data(App::DATA_USERS);
-        $this->sessionsData = new Data('sessions');
-
         $this->setTitle(__('registration'));
 
         if ($this->request->isPost()) {
@@ -96,8 +76,10 @@ class AuthController extends AbstractController
 
             // login new user and update session
             $sessionToken = $this->createToken($login);
-            $sessions = $this->sessionsData->setData([$sessionToken => $login] + $this->sessionsData->read());
-            $sessions->write();
+
+            Data::scope(App::DATA_SESSIONS)
+                ->insertOrUpdate($sessionToken, $login)
+                ->write();
 
             return $this->app->getCookiesPipe()
                 ->addCookie($this->response, 'tkn', $sessionToken)

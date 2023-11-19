@@ -86,11 +86,10 @@ class LastbuildController extends ApiProto
     }
     
     private function _getProjectsByName () {
-        $projects = new Data(App::DATA_PROJECTS);
-        $d = $projects->read();
-    
+        $projects = Data::scope(App::DATA_PROJECTS)->reload()->getAll();
+
         $res = [];
-        foreach ($d as $key => $folders) {
+        foreach ($projects as $key => $folders) {
             $res[str_replace('/','', implode('', $folders))] = $key;
         }
         

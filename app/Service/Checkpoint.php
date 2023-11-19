@@ -9,21 +9,18 @@ use Commands\Command\CommandProto;
  */
 class Checkpoint
 {
-    /** @var Pack */
-    protected $pack;
+    protected Pack $pack;
     
     /** @var CommandProto[] */
-    protected $commands = [];
+    protected array $commands = [];
     
     /**
      * Branch name used as checkpoint ID
-     * @var string
      */
-    protected $id;
+    protected string $id;
 
     // TODO: convert it to typed object
-    /** @var array */
-    protected $details;
+    protected array $details = [];
 
     public function __construct(Pack $pack, string $id, array $details = [])
     {

@@ -15,7 +15,7 @@ class SlotFactory
 {
     public static function getSlot($id)
     {
-        $slotData = (new Data(App::DATA_SLOTS))->setReadFrom(__METHOD__)->readCachedId($id);
+        $slotData = Data::scope(App::DATA_SLOTS)->getById($id);
         return self::getSlotModel($slotData);
     }
     

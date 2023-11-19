@@ -19,7 +19,7 @@ class Slot extends AuthControllerProto
     {
         parent::before();
         $this->projectId = $this->p('pId');
-        $this->slots = new Data(App::DATA_SLOTS);
+        $this->slots = Data::scope(App::DATA_SLOTS);
     }
 
     public function isEnabled(): bool
@@ -30,9 +30,8 @@ class Slot extends AuthControllerProto
     public function index() 
     {
         $this->setTitle('Сервера и слоты');
-        $this->slots->setReadFrom(__METHOD__);
-        
-        $this->response(['slots' => $this->slots->readCached(),]);
+
+        $this->response(['slots' => $this->slots->getAll(),]);
     }
     
     public function create() 
@@ -68,7 +67,7 @@ class Slot extends AuthControllerProto
                 'id' => $slotId,
             ] + $slotData;
     
-            $this->slots->setData([$slotId => $slotData] + $this->slots->read())->write();    
+            $this->slots->insertOrUpdate($slotId, $slotData)->write();
         }
         
         $this->response([

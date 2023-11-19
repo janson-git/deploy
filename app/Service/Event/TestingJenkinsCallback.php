@@ -70,7 +70,7 @@ class TestingJenkinsCallback extends EventProto
     private function config ()
     {
         if (!$this->configData) {
-            $this->configData = new Data('jenkins');
+            $this->configData = Data::scope('jenkins');
         }
         
         return $this->configData;

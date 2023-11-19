@@ -21,7 +21,7 @@ class ConfigController extends AbstractController
 
     public function index(): ResponseInterface
     {
-        $data = new Data('', Data::DEFAULT_DATA_DIR, false);
+        $data = new Data('', false);
         $scopes = $data->getScopes(Data::DEFAULT_DATA_DIR);
         
         return $this->view->render('config/index.blade.php', [
@@ -33,9 +33,8 @@ class ConfigController extends AbstractController
     {
         $scopeName = $this->p('scope');
         
-        $scope = new Data($scopeName);
-        $scope->setReadFrom(__METHOD__);
-        
+        $scope = Data::scope($scopeName);
+
         if ($this->app->getRequest()->isPost()) {
             $keys = $this->p('data_key');
             $values = $this->p('data_value');
@@ -59,7 +58,7 @@ class ConfigController extends AbstractController
         
         return $this->view->render('config/edit.blade.php', [
             'scope' => $scopeName,
-            'data' => $scope->getData(),
+            'data' => $scope->getAll(),
         ]);
     }
     
@@ -87,7 +86,7 @@ class ConfigController extends AbstractController
         return $this->view->render('config/settings.blade.php', [
             'is_exists' => $scope->isExist(),
             'scope' => $scope->getName(),
-            'data' => $scope->getData(),
+            'data' => $scope->getAll(),
         ]);
     }
     

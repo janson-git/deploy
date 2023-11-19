@@ -30,8 +30,8 @@ class Auth implements AuthInterface
 
     public function loadUser(): void
     {
-        $auth = (new Data(App::DATA_SESSIONS))->readCached();
-        if (isset($auth[$this->token])) {
+        $auth = Data::scope(App::DATA_SESSIONS)->getById($this->token);
+        if ($auth !== null) {
             $this->user = User::getByLogin($auth[$this->token]);
         }
         if ($this->token === self::USER_ANONIM_TOKEN){

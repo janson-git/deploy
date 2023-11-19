@@ -21,8 +21,8 @@ class ProjectsController extends AbstractController
     {
         $this->setTitle( '<i class="fa-solid fa-folder-tree"></i>' . __('projects'));
         
-        $projects = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
-        $packsData    = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->readCached();
+        $projects = Data::scope(App::DATA_PROJECTS)->getAll();
+        $packsData = Data::scope(App::DATA_PACKS)->getAll();
 
         $sets = [];
         foreach ($packsData as $id => $data) {
@@ -116,10 +116,7 @@ class ProjectsController extends AbstractController
      */
     public function fetch(int $id): ResponseInterface
     {
-        $projects = (new Data(App::DATA_PROJECTS));
-        $projects->setReadFrom(__METHOD__);
-        $projects->read();
-        $projectsDirs = $projects->getData();
+        $projectsDirs = Data::scope(App::DATA_PROJECTS)->reload()->getAll();
         $dirs         = $projectsDirs[$id];
 
         $node = new Node();

@@ -27,7 +27,8 @@ class SlotsPool
     
     public function loadProjectSlots () 
     {
-        $slots = (new Data(App::DATA_SLOTS))->setReadFrom(__METHOD__)->readCachedFilter('projectId', $this->projectId);
+        $slots = Data::scope(App::DATA_SLOTS)
+            ->getWhere('projectId', $this->projectId);
         
         foreach ($slots as $id => $slotData) {
             $this->slots[$id] = SlotFactory::getSlotModel($slotData);

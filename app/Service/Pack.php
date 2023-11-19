@@ -187,7 +187,7 @@ class Pack
             throw new \Exception('Pack ID not defined!');
         }
 
-        $this->data = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->read()[$this->id];
+        $this->data = Data::scope(App::DATA_PACKS)->getById($this->id);
         $this->projectId = $this->data['project'];
 
         $this->project = Project::getById($this->projectId);
@@ -425,25 +425,18 @@ class Pack
             'branches' => $this->branches,
         ];
 
-        $packs = new Data(App::DATA_PACKS);
-        $packs->setReadFrom(__METHOD__);
-
         $packId = $this->getId() ?? crc32((string) microtime(true));
         $this->id = $packId;
 
-        $packs->setData([$packId => $packData] + $packs->read());
-        $packs->write();
+        Data::scope(App::DATA_PACKS)
+            ->insertOrUpdate($packId, $packData)
+            ->write();
     }
 
     public function delete(): void
     {
-        $packs = new Data(App::DATA_PACKS);
-        $packs->setReadFrom(__METHOD__);
-        $data = $packs->read();
-
-        unset($data[$this->id]);
-
-        $packs->setData($data);
-        $packs->write();
+        Data::scope(App::DATA_PACKS)
+            ->delete($this->id)
+            ->write();
     }
 }

@@ -46,7 +46,7 @@ class User
     private function loadBy(string $login, ?string $password = null): ?self
     {
         /* load data */
-        $data = (new Data(App::DATA_USERS))->setReadFrom(__METHOD__)->readCached();
+        $data = Data::scope(App::DATA_USERS)->getAll();
 
         if (!isset($data[$login])) {
             return null;
@@ -147,29 +147,17 @@ class User
             throw new \Exception('User login not defined!');
         }
 
-        $users = (new Data(App::DATA_USERS))->setReadFrom(__METHOD__);
-        $data = $users->read();
+        $userData = [
+            'name' => $this->name,
+            'pass' => $this->password,
+            'id' => $this->id,
+            'login' => $this->login,
+            'committerName' => $this->commitAuthorName,
+            'committerEmail' => $this->commitAuthorEmail,
+        ];
 
-        if (array_key_exists($this->login, $data)) {
-            // UPDATE USER
-            $userData = $data[$this->login];
-            $userData['pass'] = $this->password;
-            $userData['committerName'] = $this->commitAuthorName;
-            $userData['committerEmail'] = $this->commitAuthorEmail;
-
-            $users->setData([$this->login => $userData] + $users->read());
-            $users->write();
-        } else {
-            // CREATE USER
-            $userData = [];
-            $userData[\User\Auth::USER_NAME] = $this->name;
-            $userData[\User\Auth::USER_PASS] = $this->password;
-            $userData[\User\Auth::USER_ID] = $this->id;
-            $userData[\User\Auth::USER_LOGIN] = $this->login;
-
-            $users->setData([$this->login => $userData] + $users->read());
-            $users->write();
-        }
-
+        Data::scope(App::DATA_USERS)
+            ->insertOrUpdate($this->login, $userData)
+            ->write();
     }
 }

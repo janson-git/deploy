@@ -37,13 +37,13 @@ class Project
     private function loadBy(int $id): self
     {
         /* load project data */
-        $projectsData = (new Data(App::DATA_PROJECTS))->setReadFrom(__METHOD__)->readCached();
-        if (!isset($projectsData[$id])) {
+        $projectData = Data::scope(App::DATA_PROJECTS)->getById($id);
+        if ($projectData === null) {
             throw new NotFoundException('Project #' . $this->id . ' not found');
         }
         
         /* get project data */
-        $this->projectRootDirs = $projectsData[$this->id];
+        $this->projectRootDirs = $projectData;
 
         /* boot node */
         $this->node = new Node();
@@ -98,7 +98,8 @@ class Project
     public function getPacks(): array
     {
         $packs = [];
-        $packsData = (new Data(App::DATA_PACKS))->setReadFrom(__METHOD__)->readCached();
+        $packsData = Data::scope(App::DATA_PACKS)->getAll();
+
         foreach ($packsData as $id => $data) {
             if ($data['project'] == $this->id) {
                 $packs[] = Pack::getById($id);
@@ -133,16 +134,14 @@ class Project
 
     public function save(): void
     {
-        $projectsData = new Data(App::DATA_PROJECTS);
-        $projectsData->setReadFrom(__METHOD__);
-
         $dirs = $this->projectRootDirs;
         sort($dirs);
 
         $projectId = $this->getId() ?? crc32(implode(',', $this->projectRootDirs));
         $this->id = $projectId;
 
-        $projectsData->setData($projectsData->read() + [$projectId => $dirs]);
-        $projectsData->write(false);
+        Data::scope(App::DATA_PROJECTS)
+            ->insertOrUpdate($projectId, $dirs)
+            ->write();
     }
 }

@@ -34,7 +34,7 @@ class Directory
     {
         $data = $this->doScanDir($this->sitesDir);
         
-        $exclude = (new Data('deploy_exclude'))->setReadFrom(__METHOD__)->read();
+        $exclude = Data::scope('deploy_exclude')->read();
         
         foreach ($data as $dirName => &$item) {
             $keys = array_flip(explode('/', $dirName));
