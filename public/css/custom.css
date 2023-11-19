@@ -132,6 +132,21 @@ h1 i,
     color: #666;
 }
 
+.badge {
+    position: relative;
+}
+.badge div {
+    position: absolute;
+    color: #0a0;
+    border: 1px solid #0a0;
+    border-radius: 5px;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1;
+    display: inline-block;
+    right: -5px;
+    top: -3px;
+}
 
 /***************************/
 /***** ANIMATIONS **********/

@@ -6,6 +6,15 @@ use Admin\App;
 
 class User
 {
+    // map to Data scope fields
+    protected const F_ID = 'id';
+    protected const F_NAME = 'name';
+    protected const F_LOGIN = 'login';
+    protected const F_PASS = 'pass';
+    protected const F_COMMITTER_NAME = 'committerName';
+    protected const F_COMMITTER_EMAIL = 'committerEmail';
+    protected const F_ACCESS_TOKEN = 'githubToken';
+
     /** @var string This is login  */
     private $id;
 
@@ -26,6 +35,8 @@ class User
 
     /** @var string */
     private $commitAuthorEmail;
+
+    private string $accessToken;
 
     public function __construct() {}
 
@@ -54,17 +65,17 @@ class User
 
         $userData = $data[$login];
 
-        if ($password !== null && $userData[\User\Auth::USER_PASS] !== md5($password)) {
+        if ($password !== null && $userData[self::F_PASS] !== md5($password)) {
             return null;
         }
 
         $this->login = $login;
-        $this->id = $userData['id'];
-        $this->name = $userData['name'];
-        $this->password = $userData['pass'];
-        $this->email = $userData['email'] ?? '';
-        $this->commitAuthorName = $userData['committerName'] ?? '';
-        $this->commitAuthorEmail = $userData['committerEmail'] ?? '';
+        $this->id = $userData[self::F_ID];
+        $this->name = $userData[self::F_NAME];
+        $this->password = $userData[self::F_PASS];
+        $this->commitAuthorName = $userData[self::F_COMMITTER_NAME] ?? '';
+        $this->commitAuthorEmail = $userData[self::F_COMMITTER_EMAIL] ?? '';
+        $this->accessToken = $userData[self::F_ACCESS_TOKEN] ?? '';
 
         return $this;
     }
@@ -141,6 +152,17 @@ class User
         return $this;
     }
 
+    public function getAccessToken(): ?string
+    {
+        return $this->accessToken;
+    }
+
+    public function setAccessToken(string $token): self
+    {
+        $this->accessToken = $token;
+        return $this;
+    }
+
     public function save(): void
     {
         if ($this->login === null) {
@@ -148,12 +170,13 @@ class User
         }
 
         $userData = [
-            'name' => $this->name,
-            'pass' => $this->password,
-            'id' => $this->id,
-            'login' => $this->login,
-            'committerName' => $this->commitAuthorName,
-            'committerEmail' => $this->commitAuthorEmail,
+            self::F_NAME => $this->name,
+            self::F_PASS => $this->password,
+            self::F_ID => $this->id,
+            self::F_LOGIN => $this->login,
+            self::F_COMMITTER_NAME => $this->commitAuthorName,
+            self::F_COMMITTER_EMAIL => $this->commitAuthorEmail,
+            self::F_ACCESS_TOKEN => $this->accessToken,
         ];
 
         Data::scope(App::DATA_USERS)

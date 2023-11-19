@@ -18,13 +18,6 @@ $view->addBreadcrumb(new Breadcrumb('Profile', 'fa-solid fa-user'));
 
 @section('content')
 <style>
-    .menu-elipsis {
-        white-space: nowrap;
-        display: block;
-        width: 100%;
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-    }
     .is-ok {
         font-size: 1.6em;
         color: #0a0;
@@ -59,6 +52,28 @@ $view->addBreadcrumb(new Breadcrumb('Profile', 'fa-solid fa-user'));
             <div class="line-separated">
                 <a class="pure-button" href="/user/committer-data">
                     {{ __('set_committer') }}
+                </a>
+            </div>
+        </div>
+
+        <div class="pure-u-1-1">
+            <div class="pure-menu-separator"></div>
+        </div>
+
+        <div class="pure-u-1-1">
+            <h2>Personal Access Token</h2>
+            <p class="description">Github fine-granted personal access token. Used to work with repositories via HTTPS protocol</p>
+            <div>
+                @if ($user->getAccessToken())
+                    <i class="fa-solid fa-check is-ok"></i> <span>Already uploaded</span>
+                @else
+                    <i class="fa-solid fa-xmark is-missed"></i> <span>Not uploaded</span>
+                @endif
+            </div>
+
+            <div class="line-separated">
+                <a class="pure-button" href="/user/personal-access-token">
+                    {{ $user->getAccessToken() ? __('replace_pat') : __('add_pat') }}
                 </a>
             </div>
         </div>

@@ -63,4 +63,26 @@ class UsersController extends AbstractController
 
         return $this->view->render('users/setCommitterForm.blade.php');
     }
+
+    public function accessToken(): Response
+    {
+        $this->setTitle(__('set_pat'));
+
+        $text = __('pat_token_page_description');
+
+        if ($this->request->isPost()) {
+            $token = $this->p('token');
+
+            $user = $this->app->getAuth()->getUser();
+            $user->setAccessToken($token);
+
+            $user->save();
+
+            return $this->response->withRedirect('/user');
+        }
+
+        return $this->view->render('users/accessToken.blade.php', [
+            'msg' => $text,
+        ]);
+    }
 }

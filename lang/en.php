@@ -64,9 +64,13 @@ return [
     'set_ssh_key' => 'Set SSH key',
     'add_ssh_key' => 'Add SSH key',
     'replace_ssh_key' => 'Replace SSH key',
+    'set_pat' => 'Set token',
+    'add_pat' => 'Add token',
+    'replace_pat' => 'Replace token',
     'ssh_key_saved_successfully' => 'SSH key saved successfully',
     'set_ssh_save_failed' => 'Failed to save SSH key',
     'ssh_key_page_description' => 'Generate SSH key pair, add pub-key into your git-storage (github, gitlab, etc..), private-key put here',
+    'pat_token_page_description' => 'Set up Personal Access Token on GitHub, and save it here',
     'last_update_at' => 'Last update at',
     'set_committer' => 'Set commits author',
 ];

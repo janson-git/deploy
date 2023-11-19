@@ -42,13 +42,17 @@ class Directory
                 unset($data[$dirName]);
             } else {
                 $time = $this->getUpdateTime($dirName);
+                $remotes = $this->getRemotes($dirName);
+                $repoType = strpos($remotes[0], 'https:') > 0 ? 'https' : 'ssh';
+
                 $item += [
                     'branch' => $this->getBranch($dirName),
                     'time'   => $time,
                     'idx'    => $time['timestamp'],
                     'com'    => $this->getLastCommit($dirName),
-                    'remote' => $this->getRemotes($dirName),
+                    'remote' => $remotes,
                     'repoName' => $this->getFullRepoName($dirName),
+                    'type' => $repoType,
                 ];
             }
         }

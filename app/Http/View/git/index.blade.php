@@ -28,9 +28,15 @@ $view->addBreadcrumb(
                 <th>reset/checkout</th>
             </tr>
             </thead>
+
+            <tbody>
             @foreach ($list as $dir => $data)
                 <tr>
                     <td>
+                        <div class="badge">
+                            <div>{{ strtoupper( $data['type'] ) }}</div>
+                        </div>
+
                         <p style="font-weight: bold; white-space: nowrap">{{ $dir }}</p>
                         <p style="white-space: nowrap; color: #666;">
                             <small>{{ $data['repoName'] }}</small>
@@ -69,6 +75,7 @@ $view->addBreadcrumb(
                     </td>
                 </tr>
             @endforeach
+            </tbody>
         </table>
     </div>
 

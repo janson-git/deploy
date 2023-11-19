@@ -1,6 +1,7 @@
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/janson-git/deploy)
 ![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/janson-git/deploy)
 ![GitHub repo size](https://img.shields.io/github/repo-size/janson-git/deploy)
+![GitHub Top Language](https://img.shields.io/github/languages/top/janson-git/deploy)
 
 # Release Branches Manage Tool
 
