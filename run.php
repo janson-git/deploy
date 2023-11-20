@@ -41,7 +41,9 @@ $app = new \Admin\App([
         return new \Service\Util\CookiesPipe();
     },
     'logger' => function (ContainerInterface $container) {
-        return new \Service\Logger();
+        return new \Service\Log\Logger(
+            new \Service\Log\LogSanitizer($container)
+        );
     },
     'errorHandler' => function (ContainerInterface $container) {
         return new \Service\ErrorHandler($container);

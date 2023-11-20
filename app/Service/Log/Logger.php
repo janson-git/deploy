@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Service;
+namespace Service\Log;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -11,6 +11,12 @@ use Stringable;
 class Logger implements LoggerInterface, Stringable
 {
     private array $logs = [];
+    private LogSanitizer $sanitizer;
+
+    public function __construct(LogSanitizer $sanitizer)
+    {
+        $this->sanitizer = $sanitizer;
+    }
 
     public function emergency($message, array $context = []): void
     {
@@ -54,6 +60,7 @@ class Logger implements LoggerInterface, Stringable
 
     public function log($level, $message, array $context = []): void
     {
+        $message = $this->sanitizer->sanitize($message);
         $this->logs[] = "[$level] $message " . json_encode($context, JSON_UNESCAPED_UNICODE);
     }
 

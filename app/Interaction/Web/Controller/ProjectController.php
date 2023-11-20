@@ -70,7 +70,7 @@ class ProjectController extends AuthControllerProto
                 if (in_array($branchName,  $repo->getRemoteBranches())) {
                     $repo->setSshKeyPath($sshPrivateKey);
 //                    $repo->removeBranch('origin ' . $branchName);
-                    $repo->push('origin',  ['--delete', $branchName]);
+                    $repo->push(['--delete', $branchName]);
                     $repo->fetch();
 //                    $repo->removeBranch($branchName);
                 }

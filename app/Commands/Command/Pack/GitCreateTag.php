@@ -48,7 +48,7 @@ class GitCreateTag extends CommandProto
             $repo->fetch();
             $repo->checkout($checkpoint);
             $repo->createTag($tag);
-            $repo->push('--tags');
+            $repo->pushTags();
 
             $repo->setSshKeyPath(null);
 

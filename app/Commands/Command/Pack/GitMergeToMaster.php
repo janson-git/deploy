@@ -26,7 +26,7 @@ class GitMergeToMaster extends CommandProto
             $repo->pull();
             
             $repo->merge($checkpoint, '--no-ff');
-            $repo->push('origin', ['master']);
+            $repo->push(['master']);
             
             $repo->setSshKeyPath(null);
             // ssh-agent $(ssh-add /home/christoffer/ssh_keys/theuser; git clone git@github.com:TheUser/TheProject.git)

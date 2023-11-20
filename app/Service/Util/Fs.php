@@ -78,7 +78,7 @@ class Fs
             }
 
             $lastLine = end($out);
-            
+
             $msg = $cmd
                 . '  | '
                 . ($result !== 0 ? 'Fail: ' . implode(' // ', array_slice($out, 0, 10)) : 'Success')

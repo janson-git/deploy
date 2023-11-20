@@ -24,7 +24,7 @@ class GitPushCheckpoint extends CommandProto
             $repo->setSshKeyPath($sshPrivateKey);
             $repo->fetch();
             $repo->checkout($checkpoint);
-            $repo->push('origin', [$checkpoint]);
+            $repo->push([$checkpoint]);
             $repo->setSshKeyPath(null);
     
             $this->runtime[$repo->getPath()] = $repo->getLastOutput();

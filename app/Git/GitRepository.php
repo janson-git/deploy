@@ -8,8 +8,12 @@ use User\Auth;
 
 class GitRepository
 {
+    public const PROTOCOL_HTTPS = 'https';
+    public const PROTOCOL_SSH = 'ssh';
+
     private string $repository;
     private string $path;
+    private string $remoteUrl;
 
     private Fs $fs;
 
@@ -20,6 +24,8 @@ class GitRepository
 
     private string $lastOutput = '';
     private ?string $sshKeyPath = '';
+
+    private ?string $accessToken = null;
 
     private bool $ignoreKnownHosts = true;
 
@@ -44,7 +50,7 @@ class GitRepository
 
         $this->path       = $repository;
         $this->repository = $realpath;
-        
+
         $this->fs = new Fs();
         $this->fs->setWorkDir($this->repository);
 
@@ -56,6 +62,9 @@ class GitRepository
 
         $this->commitAuthorName = $user->getCommitAuthorName();
         $this->commitAuthorEmail = $user->getCommitAuthorEmail();
+        $this->accessToken = $user->getAccessToken();
+
+        $this->remoteUrl  = $this->getRemoteUrl();
     }
 
     public function getRepositoryPath(): string
@@ -351,7 +360,10 @@ class GitRepository
      */
     public function fullReset(): self
     {
-        return $this->begin()->run('git reset --hard HEAD')->run('git clean -df')->end();
+        return $this->begin()
+            ->run('git reset --hard HEAD')
+            ->run('git clean -df')
+            ->end();
     }
     
     /**
@@ -445,6 +457,48 @@ class GitRepository
         return ($a1 && $a2) || $a3; // FALSE => changes
     }
 
+    private function getTokenizedRemoteUrl(?string $tokenToInject = null, ?string $remoteUrl = null): string
+    {
+        if ($remoteUrl === null) {
+            $remoteUrl = $this->getRemoteUrl();
+        }
+        // split url, inject token and join result
+        if ($this->parseProtocolFromUrl($remoteUrl) === self::PROTOCOL_HTTPS) {
+            $pattern = '#(?<protocol>[\w]+://)(?<token>[\w]*\@)?(?<url>.*)#';
+
+            if (preg_match($pattern, $remoteUrl, $m)) {
+                $token = empty($tokenToInject) ? '' : "{$tokenToInject}@";
+                $remoteUrl = $m['protocol'] . $token . $m['url'];
+            }
+        }
+        return $remoteUrl;
+    }
+
+    private function getRemoteUrl(): string
+    {
+        $this->begin();
+        $this->fs->exec('git remote -v', $out, $res, __METHOD__);
+        $this->end();
+
+        $line = array_shift($out);
+        list(, $url, ) = preg_split('#\s+#', $line);
+
+        return $url;
+    }
+
+    /**
+     * @return string Available protocols: https, ssh
+     */
+    private function parseProtocolFromUrl(string $urlToParse): string
+    {
+        switch ($urlToParse) {
+            case str_starts_with($urlToParse, 'https:'):
+                return self::PROTOCOL_HTTPS;
+            default:
+                return self::PROTOCOL_SSH;
+        }
+    }
+
     protected function begin(): self
     {
         if ($this->cwd === null) // TODO: good idea??
@@ -472,7 +526,9 @@ class GitRepository
      */
     public function fetch(): self
     {
-        return $this->begin()->run('git fetch -p')->end();
+        $tokenizedRepoUrl = $this->getTokenizedRemoteUrl($this->accessToken, $this->remoteUrl);
+
+        return $this->begin()->run("git fetch -p {$tokenizedRepoUrl}")->end();
     }
 
     /**
@@ -480,27 +536,39 @@ class GitRepository
      *
      * @throws GitException
      */
-    public function pull(?string $remote = null, ?array $params = null): self
+    public function pull(?array $params = null): self
     {
         if (!is_array($params)) {
             $params = [];
         }
-        
-        return $this->begin()->run("git pull $remote", $params)->end();
+
+        $tokenizedRepoUrl = $this->getTokenizedRemoteUrl($this->accessToken, $this->remoteUrl);
+
+        return $this->begin()->run("git pull {$tokenizedRepoUrl}", $params)->end();
     }
 
     /**
-     * Push changes to a remote
-     *
      * @throws GitException
      */
-    public function push(?string $remote = null, ?array $params = null): self
+    public function push(?array $params = null): self
     {
         if (!is_array($params)) {
-            $params = array();
+            $params = [];
         }
-        
-        return $this->begin()->run("git push $remote", $params)->end();
+
+        $tokenizedRepoUrl = $this->getTokenizedRemoteUrl($this->accessToken, $this->remoteUrl);
+
+        return $this->begin()->run("git push {$tokenizedRepoUrl}", $params)->end();
+    }
+
+    /**
+     * @throws GitException
+     */
+    public function pushTags(): self
+    {
+        $tokenizedRepoUrl = $this->getTokenizedRemoteUrl($this->accessToken, $this->remoteUrl);
+
+        return $this->begin()->run("git push --tags {$tokenizedRepoUrl}")->end();
     }
 
     /**
@@ -511,7 +579,13 @@ class GitRepository
      */
     public function cloneRemoteRepository(string $remoteRepo, string $dir): self
     {
-        return $this->begin()->run("git clone {$remoteRepo} \"$dir\"")->end();
+        $tokenizedRepoUrl = $this->getTokenizedRemoteUrl($this->accessToken, $remoteRepo);
+
+        return $this->begin()
+            ->run("git clone {$tokenizedRepoUrl} \"$dir\"")
+            // remove PAT from git remote url after clone for secure reasons
+            ->run("cd \"{$dir}\" && git remote set-url origin {$remoteRepo} && cd ..")
+            ->end();
     }
     
     /**
@@ -596,7 +670,7 @@ class GitRepository
         $sshParams = '';
 
         if ($this->sshKeyPath) {
-            $sshParams .= ' -i '.$this->sshKeyPath.' ';
+            $sshParams .= ' -i ' . $this->sshKeyPath . ' ';
         }
 
         if ($this->ignoreKnownHosts) {
@@ -604,7 +678,7 @@ class GitRepository
         }
 
         if ($sshParams) {
-            $sshParams = ' GIT_SSH_COMMAND="ssh '.$sshParams.'" ';
+            $sshParams = ' GIT_SSH_COMMAND="ssh ' . $sshParams . '" ';
         }
 
         $gitAuthor = '';
@@ -614,7 +688,7 @@ class GitRepository
             $gitAuthor = "$gitName && $gitEmail && ";
         }
 
-        $commandLine = trim($sshParams.' '.$programName.' ' . implode(' ', $cmd));
+        $commandLine = trim("{$sshParams} {$programName} " . implode(' ', $cmd));
 
         // wrap command with brackets to run it as subshell and avoid impact
         // of exported variables on main shell
@@ -669,38 +743,16 @@ class GitRepository
 
     public function update(string $branch): string
     {
+        $tokenizedRemoteUrl = $this->getTokenizedRemoteUrl($this->accessToken, $this->remoteUrl);
+
         $output = [];
-        $output[] = $this->begin()->run('git fetch -p 2>&1')->getLastOutput();
+        $output[] = $this->begin()->run("git fetch -p {$tokenizedRemoteUrl} 2>&1")->getLastOutput();
         $output[] = $this->begin()->run("git merge --ff-only -X theirs origin/{$branch} 2>&1")->getLastOutput();
         $output[] = $this->begin()->run("touch ./")->getLastOutput();
 
         return implode("\n", $output);
     }
-    
-    /**
-     * @param  string /path/to/repo.git | host.xz:foo/.git | ...
-     *
-     * @return string  repo | foo | ...
-     */
-    public static function extractRepositoryNameFromUrl($url)
-    {
-        // /path/to/repo.git => repo
-        // host.xz:foo/.git => foo
-        $directory = rtrim($url, '/');
-        if (substr($directory, -5) === '/.git') {
-            $directory = substr($directory, 0, -5);
-        }
-        
-        $directory = basename($directory, '.git');
-        
-        if (($pos = strrpos($directory, ':')) !== false) {
-            $directory = substr($directory, $pos + 1);
-        }
-        
-        return $directory;
-    }
-    
-    
+
     /**
      * Is path absolute?
      * Method from Nette\Utils\FileSystem
@@ -761,5 +813,10 @@ class GitRepository
     public function setSshKeyPath(?string $sshKeyPath): void
     {
         $this->sshKeyPath = $sshKeyPath;
+    }
+
+    public function setAccessToken(string $accessToken): void
+    {
+        $this->accessToken = $accessToken;
     }
 }

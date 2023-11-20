@@ -61,11 +61,11 @@ $view->addBreadcrumb(new Breadcrumb('Profile', 'fa-solid fa-user'));
         </div>
 
         <div class="pure-u-1-1">
-            <h2>Personal Access Token</h2>
+            <h2>GitHub Personal Access Token</h2>
             <p class="description">Github fine-granted personal access token. Used to work with repositories via HTTPS protocol</p>
             <div>
                 @if ($user->getAccessToken())
-                    <i class="fa-solid fa-check is-ok"></i> <span>Already uploaded</span>
+                    <i class="fa-solid fa-check is-ok"></i> <span>Already uploaded ( expired {{ $user->getAccessTokenExpirationDate() }} )</span>
                 @else
                     <i class="fa-solid fa-xmark is-missed"></i> <span>Not uploaded</span>
                 @endif

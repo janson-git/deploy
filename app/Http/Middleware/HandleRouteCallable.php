@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use Service\Logger;
+use Service\Log\Logger;
 use Slim\Container;
 use Slim\Http\Request;
 use Slim\Http\Response;

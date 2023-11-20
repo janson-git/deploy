@@ -441,3 +441,10 @@ h1 i,
 .tool:focus::before  {
     transition: all .15s cubic-bezier(.84,-0.18,.31,1.26);
 }
+
+
+/***********************************************/
+/***** FORMS ***********************************/
+input.error {
+    border-color: #f00 !important;
+}
