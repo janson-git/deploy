@@ -38,21 +38,21 @@ docker-compose up -d
 The result of these commands is equal.
 
 3. Open in your browser URL http://localhost:9088. It looks like this:
-![Login page](./img/login_page.png)
+![Login page](./img/1_login_page.png)
 
 4. Go to `Register` page and create account (all data stored locally in your app instance)
-![Registration page](./img/register_page.png)
+![Registration page](./img/2_register_page.png)
 
 5. After click `Register`, you redirected to `Projects` page. Now it is empty. 
 You need add repository cause of projects are based on repositories. Let's add one.
-![Initial projects page](./img/initial_projects_page.png)
+![Initial projects page](./img/3_initial_projects_page.png)
 
 6. Click on `Add Repository` button, get the page and insert example URL `https://github.com/janson-git/release-example-for-deploy` in field. Then click `Save`
-![Add your first repository to app](./img/add_repository_page.png)
+![Add your first repository to app](./img/4_add_repository_page.png)
 
 7. After saving you saw the page where new repository presented. Ok, just click to `Projects` link in menu and starts to create new project!
 8. Click on `Create new project` button on `Projects` page. The page to create new project looks like this one:
-![Create project](./img/create_project_page.png)
+![Create project](./img/5_create_project_page.png)
 At this page you see:
   - directory list of repositories which already added in app
   - list of repositories and list of branches in each one
@@ -64,7 +64,7 @@ Only changes are:
   - list of root directories appeared on page
   - button `Save project` under the list
 You are close! Click on `Save project` and see project created!
-![Created project!](./img/first_created_project.png)
+![Created project!](./img/6_created_project.png)
 
 9. Okay! Right now you need to know one more thing: PACKS. Think about PACK as a PLAN of release. 
 You can add repository branches in pack and after merge it created release branch.
@@ -77,14 +77,14 @@ Let's look at!
 
 10. Create a pack. If you don't see all branches that exists in repo then click on `Fetch repositories` button.
 It fetches repository and return to page `Create pack`. Mark by checkboxes all branches that you want to add in release and click `Save pack`
-![Pack create](./img/first_pack_create.png)
+![Pack create](./img/7_create_pack_page.png)
 
 11. And now you see the head page of future release! This is the PACK where you can see:
   - current **build (checkpoint)** that mapped to git branch with actions (merge branches, search conflicts branches, and remove build)
   - under the build you see the list of branches in pack. On this page you control what branches assembled in a build
   - and pack actions on the right.
 
-![Pack successfully created](./img/created_pack_page.png)
+![Pack successfully created](./img/8_created_pack_page.png)
 
 
-# TODO: FINISH THE HELP!
+# TODO: FINISH DOCS
