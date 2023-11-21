@@ -23,7 +23,7 @@ class CheckpointCreateCommand extends CommandProto
         foreach ($sandbox->getRepos() as $id => $repo) {
             $repo->fetch();
             $repo->fullReset();
-            $repo->checkoutToNewBranch('origin/master', $this->checkpointName);
+            $repo->checkoutToNewBranchFromOriginMain($this->checkpointName);
             $this->runtime[$repo->getPath()] = ['ok '.$this->checkpointName];
         }
     }

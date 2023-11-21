@@ -55,8 +55,8 @@ class ConflictAnalyzeCommand extends CommandProto
         $repoPath = $repo->getPath();
         
         $repo->fullReset();
-        $repo->checkout('master');
-        $repo->checkoutToNewBranch('origin/master', $mergeTestBranch);
+        $repo->checkoutToMainBranch();
+        $repo->checkoutToNewBranchFromOriginMain($mergeTestBranch);
         
         $conflict = [];
         $results = [];
@@ -76,7 +76,7 @@ class ConflictAnalyzeCommand extends CommandProto
     
         $this->runtime->log($results, $repoPath);
     
-        $repo->checkout('master');
+        $repo->checkoutToMainBranch();
         $repo->removeBranch($mergeTestBranch);
         
         return $conflict;
@@ -97,7 +97,7 @@ class ConflictAnalyzeCommand extends CommandProto
             if ($testBranch === $conflictBranch) {
                 continue;
             }
-            $repo->checkout('master');
+            $repo->checkoutToMainBranch();
             
             $mergeTestBranch = 'merge-test-find-'.$conflictBranch.microtime(1);
             $repo->checkoutToNewBranch('origin/'.$conflictBranch, $mergeTestBranch);
@@ -121,7 +121,7 @@ class ConflictAnalyzeCommand extends CommandProto
                 $repo->fullReset();
             }
             
-            $repo->checkout('master');
+            $repo->checkoutToMainBranch();
             $repo->removeBranch($mergeTestBranch);
         }
         

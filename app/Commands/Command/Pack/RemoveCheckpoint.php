@@ -11,7 +11,7 @@ class RemoveCheckpoint extends CommandProto
     {
         $branchName    = $this->context->getCheckpoint()->getName();
         foreach ($this->context->getPack()->getRepos() as $id => $repo) {
-            $repo->checkout('origin/master');
+            $repo->checkoutToOriginMainBranch();
             try {
                 $repo->removeBranch($branchName);
                 $this->runtime[$repo->getPath()] = 'success';
