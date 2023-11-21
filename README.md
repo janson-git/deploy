@@ -36,10 +36,11 @@ docker-compose up -d
 ```
 
 2. Open http://localhost:9088/ in your browser. Register as new user in your  `deploy` app
-3. At this step lets create personal ssh key for your `deploy` account. That key will use in interactions with github.com from `deploy`.
+3. Token. If you plan work with GitHub repositories only, I recommend you create Personal Access Token (PAT) on GitHub. Classical and fine-grained tokens available to use. 
+4. If you work with other repositories then it would be more suitable to create personal ssh key. That key will use in interactions with repositories from `deploy` app.
    I recommend DO NOT USE your personal SSH key for that, but create new one for `deploy`.
    - create ssh keys with `ssh-keygen` command
-   - upload `.pub` key part to your github account
+   - upload `.pub` key part to your GitHub (or other repository storage) account
    - put you private key part to your `deploy` app account on page  http://localhost:9088/user (click `Add SSH key` button)
 4. it shows on user profile page if SSH key already uploaded to app
 
