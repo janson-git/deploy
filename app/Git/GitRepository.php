@@ -61,17 +61,20 @@ class GitRepository
         $this->setMainBranch();
     }
 
+    /**
+     * GitHub's repositories based on one of : main, master
+     * We need check what of base is used in repository
+     *
+     * @throws GitException
+     */
     private function setMainBranch(): void
     {
-        $result = $this->begin()
-            ->extractFromCommand('git branch', function($item) {
-                return trim($item, "\n\r\t* ");
-            });
-        foreach ($result as $branchName) {
-            if (!in_array($branchName,  ['master', 'main'])) {
+        $remoteBranches = $this->getRemoteBranches() ?? [];
+
+        foreach ($remoteBranches as $branchName) {
+            if (!in_array($branchName,  ['master', 'main']) && !empty($this->mainBranch)) {
                 continue;
             }
-            // in this point available to get 'master' or 'main'
             // if repo has both 'main' and 'master' - use 'main'
             if ($this->mainBranch === 'main') {
                 break;
@@ -278,7 +281,7 @@ class GitRepository
         $this->getRemoteBranches();
         
         if (in_array($branch, $this->remoteBranches)) {
-            $this->merge('origin/' . $branch, ['--no-ff', '--log=50', '--stat']);
+            $this->merge("origin/{$branch}", ['--no-ff', '--log=50', '--stat']);
             
             return $this->lastOutput;
         }
@@ -313,7 +316,19 @@ class GitRepository
             return trim(substr($value, 1));
         });
     }
-    
+
+    private function filterBranchName(string $name): string
+    {
+        $name = trim($name);
+        $mainBranchPattern = "#^(?<origin>origin/)?(?<master>master|main)$#";
+
+        if (preg_match($mainBranchPattern, $name, $m)) {
+            $name = !empty($m['origin']) ? "origin/{$this->mainBranch}" : $this->mainBranch;
+        }
+
+        return $name;
+    }
+
     /**
      * Checkout branch.
      * `git checkout <branch>`
@@ -322,6 +337,7 @@ class GitRepository
      */
     public function checkout(string $name): self
     {
+        $name = $this->filterBranchName($name);
         return $this->begin()->run('git checkout', $name)->end();
     }
 
@@ -330,7 +346,23 @@ class GitRepository
      */
     public function checkoutToNewBranch(string $name, string $toBranch): self
     {
+        $name = $this->filterBranchName($name);
         return $this->begin()->run('git checkout ', $name, ['-b' => $toBranch])->end();
+    }
+
+    public function checkoutToMainBranch(): self
+    {
+        return $this->checkout($this->mainBranch);
+    }
+
+    public function checkoutToOriginMainBranch(): self
+    {
+        return $this->checkout("origin/{$this->mainBranch}");
+    }
+
+    public function checkoutToNewBranchFromOriginMain(string $newBranchName): self
+    {
+        return $this->checkoutToNewBranch("origin/{$this->mainBranch}", $newBranchName);
     }
 
     /**
@@ -525,6 +557,11 @@ class GitRepository
         return $this->begin()->run("git push $remote", $params)->end();
     }
 
+    public function pushMainBranchToOrigin(): self
+    {
+        return $this->begin()->run("git push origin", [$this->mainBranch])->end();
+    }
+
     /**
      * Clone remote repository to local dir.
      * `git clone <repo_path> <dir>`
@@ -551,7 +588,7 @@ class GitRepository
         $this->begin();
         $this->fs->exec($cmd, $output, $exitCode, __METHOD__);
         $this->end();
-        
+
         if ($exitCode !== 0 || !is_array($output)) {
             $this->exception("Command $cmd failed.");
         }
@@ -774,7 +811,7 @@ class GitRepository
         $this->begin()->run("git rev-list --left-right --count origin/{$this->mainBranch}...{$branch}")->end();
         return preg_split('/\s+/', $this->lastOutput);
     }
-    
+
     public function getSshKeyPath(): string
     {
         return $this->sshKeyPath;

@@ -274,11 +274,11 @@ class Pack
             }
         } else if($branchesByProject) {
             $commonLocalBranches = array_filter((array)$branchesByProject[0]);
-            $latestBranchDetails = $branchesDetailed[0];
+            $latestBranchDetails = $branchesDetailed[0] ?? [];
         }
 
         foreach ($commonLocalBranches as $branch) {
-            if ($branch === 'master') {
+            if (in_array($branch, ['master','main'])) {
                 continue;
             }
             

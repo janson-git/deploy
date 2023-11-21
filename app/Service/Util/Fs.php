@@ -51,13 +51,13 @@ class Fs
         $start = microtime(1);
         try {
             $fp = popen('cd ' . $this->workDir . ' && ' . $cmd . ' 2>&1', "r");
-            
+
             $outString = '';
             while (!feof($fp)) {
                 $outString .= fread($fp, 2048);
             }
             $result = pclose($fp);
-            
+
             $outData = explode("\n", $outString);
             
             foreach ($outData as $id => &$line) {
@@ -66,7 +66,7 @@ class Fs
                     $out[] = $line;
                 }
             }
-            
+
             if ($outLinesLimit && $out && count($out) > $outLinesLimit) {
                 $halfSlice = ($outLinesLimit)/2;
                 $out = 
@@ -89,7 +89,7 @@ class Fs
             App::i()->log($cmd . ' with exception: ' . $e->getMessage(), $from, $start);
             throw $e;
         }
-        
+
         return $lastLine;
     }
     

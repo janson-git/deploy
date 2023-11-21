@@ -22,11 +22,11 @@ class GitMergeToMaster extends CommandProto
         foreach ($this->context->getPack()->getRepos() as $id => $repo) {
             $repo->setSshKeyPath($sshPrivateKey);
             
-            $repo->checkout('master');
+            $repo->checkoutToMainBranch();
             $repo->pull();
             
             $repo->merge($checkpoint, '--no-ff');
-            $repo->push('origin', ['master']);
+            $repo->pushMainBranchToOrigin();
             
             $repo->setSshKeyPath(null);
             // ssh-agent $(ssh-add /home/christoffer/ssh_keys/theuser; git clone git@github.com:TheUser/TheProject.git)
