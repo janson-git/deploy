@@ -79,4 +79,12 @@ Let's look at!
 It fetches repository and return to page `Create pack`. Mark by checkboxes all branches that you want to add in release and click `Save pack`
 ![Pack create](./img/first_pack_create.png)
 
+11. And now you see the head page of future release! This is the PACK where you can see:
+  - current **build (checkpoint)** that mapped to git branch with actions (merge branches, search conflicts branches, and remove build)
+  - under the build you see the list of branches in pack. On this page you control what branches assembled in a build
+  - and pack actions on the right.
+
+![Pack successfully created](./img/created_pack_page.png)
+
+
 # TODO: FINISH THE HELP!
