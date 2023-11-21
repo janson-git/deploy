@@ -13,6 +13,7 @@ class GitRepository
 
     private string $repository;
     private string $path;
+    private string $mainBranch = '';
     private string $remoteUrl;
 
     private Fs $fs;
@@ -65,6 +66,27 @@ class GitRepository
         $this->accessToken = $user->getAccessToken();
 
         $this->remoteUrl  = $this->getRemoteUrl();
+
+        $this->setMainBranch();
+    }
+
+    private function setMainBranch(): void
+    {
+        $result = $this->begin()
+            ->extractFromCommand('git branch', function($item) {
+                return trim($item, "\n\r\t* ");
+            });
+        foreach ($result as $branchName) {
+            if (!in_array($branchName,  ['master', 'main'])) {
+                continue;
+            }
+            // in this point available to get 'master' or 'main'
+            // if repo has both 'main' and 'master' - use 'main'
+            if ($this->mainBranch === 'main') {
+                break;
+            }
+            $this->mainBranch = $branchName;
+        }
     }
 
     public function getRepositoryPath(): string
@@ -801,7 +823,7 @@ class GitRepository
     
     public function getBehindStatus($branch)
     {
-        $this->begin()->run('git rev-list --left-right --count origin/master...'.$branch)->end();
+        $this->begin()->run("git rev-list --left-right --count origin/{$this->mainBranch}...{$branch}")->end();
         return preg_split('/\s+/', $this->lastOutput);
     }
     

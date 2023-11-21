@@ -33,7 +33,7 @@ $view
                            value="{{ $dirPath }}"/>
                 </label>
             @endforeach
-            <input type="submit" value="Собрать Проект" class="pure-button btn-primary pads"/>
+            <input type="submit" value="{{ __('assemble_project') }}" class="pure-button btn-primary pads"/>
         </form>
 
         @if ($passedDirs)

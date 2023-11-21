@@ -73,4 +73,5 @@ return [
     'pat_token_page_description' => 'Set up Personal Access Token on GitHub, and save it here',
     'last_update_at' => 'Last update at',
     'set_committer' => 'Set commits author',
+    'assemble_project' => 'Assemble the project',
 ];
