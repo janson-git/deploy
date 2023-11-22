@@ -2,7 +2,7 @@
 
 namespace Admin;
 
-use Service\Logger;
+use Service\Log\Logger;
 use Slim\App as SlimApp;
 use Slim\Exception\SlimException;
 use Slim\Http\Response;

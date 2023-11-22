@@ -14,6 +14,7 @@ class User
     protected const F_COMMITTER_NAME = 'committerName';
     protected const F_COMMITTER_EMAIL = 'committerEmail';
     protected const F_ACCESS_TOKEN = 'githubToken';
+    protected const F_ACCESS_TOKEN_EXPIRATION_DATE = 'githubTokenExpirationDate';
 
     /** @var string This is login  */
     private $id;
@@ -37,6 +38,7 @@ class User
     private $commitAuthorEmail;
 
     private ?string $accessToken = null;
+    private ?string $accessTokenExpirationDate = null;
 
     public function __construct() {}
 
@@ -76,6 +78,7 @@ class User
         $this->commitAuthorName = $userData[self::F_COMMITTER_NAME] ?? '';
         $this->commitAuthorEmail = $userData[self::F_COMMITTER_EMAIL] ?? '';
         $this->accessToken = $userData[self::F_ACCESS_TOKEN] ?? '';
+        $this->accessTokenExpirationDate = $userData[self::F_ACCESS_TOKEN_EXPIRATION_DATE] ?? '';
 
         return $this;
     }
@@ -163,6 +166,17 @@ class User
         return $this;
     }
 
+    public function getAccessTokenExpirationDate(): ?string
+    {
+        return $this->accessTokenExpirationDate;
+    }
+
+    public function setAccessTokenExpirationDate(string $date): self
+    {
+        $this->accessTokenExpirationDate = $date;
+        return $this;
+    }
+
     public function save(): void
     {
         if ($this->login === null) {
@@ -177,6 +191,7 @@ class User
             self::F_COMMITTER_NAME => $this->commitAuthorName,
             self::F_COMMITTER_EMAIL => $this->commitAuthorEmail,
             self::F_ACCESS_TOKEN => $this->accessToken,
+            self::F_ACCESS_TOKEN_EXPIRATION_DATE => $this->accessTokenExpirationDate,
         ];
 
         Data::scope(App::DATA_USERS)
