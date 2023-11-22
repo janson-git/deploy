@@ -38,7 +38,7 @@ class User
     private $commitAuthorEmail;
 
     private ?string $accessToken = null;
-    private ?string $accessTokenExpirationDate;
+    private ?string $accessTokenExpirationDate = null;
 
     public function __construct() {}
 

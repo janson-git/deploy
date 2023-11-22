@@ -30,11 +30,6 @@ RUN echo "docker-php-ext-install"     && \
     docker-php-ext-install bcmath     && \
     docker-php-ext-install opcache    && \
     docker-php-ext-install pcntl      && \
-#    docker-php-ext-install pdo_pgsql  && \
-#    docker-php-ext-install pgsql      && \
-#    docker-php-ext-install sockets    && \
-#	docker-php-ext-install zip        && \
-    pecl install -o -f amqp      && docker-php-ext-enable amqp && \
     pecl install -o -f redis     && docker-php-ext-enable redis     && \
     pecl install -o -f xdebug    && \
     docker-php-ext-configure intl            \
@@ -51,14 +46,10 @@ RUN echo "docker-php-ext-install"     && \
 
 ADD ./configs/nginx.microservice.conf /etc/nginx/sites-enabled/
 ADD ./configs/nginx.conf /etc/nginx/
-#ADD ./waiting-for-postgresql.sh /usr/local/sbin/
 ADD	./service/ /etc/service/
 RUN	touch /etc/inittab && \
     rm -rf /etc/nginx/conf.d/* && \
 	chmod +x /etc/service/*/run
-#	 && \
-#	chmod +x /usr/local/sbin/waiting-for-postgresql.sh
-#	sed -i -e "s/www-data/root/" /usr/local/etc/php-fpm.d/www.conf
 
 ADD ./50-custom.ini         /usr/local/etc/php/conf.d/
 
