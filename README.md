@@ -16,6 +16,13 @@ To get this awesome thing work you should have
 
 ### Get Started
 
+I recommend start with this document:
+[How to start and workflow example](./docs/example_flow_with_public_repo.md)
+
+All information below is based on it and possible to read after to extend knowledge of app.
+
+-----
+
 #### INSTALL (you need docker and docker-compose)
 
 1. Clone, install and start it
