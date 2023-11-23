@@ -6,7 +6,8 @@
         "tuupola/slim-basic-auth": "2.*",
         "phpseclib/phpseclib": "*",
         "eftec/bladeone": "^4.9",
-        "psr/log": "^3.0"
+        "psr/log": "^3.0",
+        "ext-curl": "*"
     },
     "autoload": {
         "exclude-from-classmap": ["/storage/"]

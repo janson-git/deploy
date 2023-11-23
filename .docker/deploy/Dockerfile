@@ -51,14 +51,10 @@ RUN echo "docker-php-ext-install"     && \
 
 ADD ./configs/nginx.microservice.conf /etc/nginx/sites-enabled/
 ADD ./configs/nginx.conf /etc/nginx/
-#ADD ./waiting-for-postgresql.sh /usr/local/sbin/
 ADD	./service/ /etc/service/
 RUN	touch /etc/inittab && \
     rm -rf /etc/nginx/conf.d/* && \
 	chmod +x /etc/service/*/run
-#	 && \
-#	chmod +x /usr/local/sbin/waiting-for-postgresql.sh
-#	sed -i -e "s/www-data/root/" /usr/local/etc/php-fpm.d/www.conf
 
 ADD ./50-custom.ini         /usr/local/etc/php/conf.d/
 
